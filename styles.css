@@ -68,6 +68,21 @@ body .notes .button-blue{background:#fff;color:#0046fd}
 @media(max-width:640px){.site-header nav{background:#0046fd;border-color:#ffffff35}.mobile-menu{color:#fff}}
 
 .concept-section{padding-top:90px;padding-bottom:70px}
+.project-intro{gap:64px;grid-template-columns:1fr 1.03fr;padding-top:65px;padding-bottom:65px;min-height:740px}
+.project-intro h1{font-size:clamp(60px,5.6vw,83px);line-height:1.08;letter-spacing:-4px;margin-top:28px}
+.project-intro .hero-description{max-width:440px;font-size:14px;line-height:1.85;margin-top:31px}
+.intro-principles{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:20px;font:500 7px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.5px;color:#ffffffb3}
+.intro-principles>i{font-style:normal;color:#ffffff60}
+.intro-endnote{margin-top:30px;padding-top:18px;border-top:1px solid #ffffff35;max-width:390px}
+.intro-endnote strong{display:block;font:500 11px var(--display);letter-spacing:.1px}
+.intro-endnote>span{display:block;font-size:9px;color:#ffffff99;margin-top:7px;line-height:1.7}
+.project-hero-art{margin:0;position:relative;align-self:center;background:#ff5a2d;border:1px solid #101621;box-shadow:10px 10px 0 #002b9d;aspect-ratio:1}
+.project-hero-art>img{width:100%;height:100%;display:block;object-fit:cover;aspect-ratio:1}
+.project-hero-art>figcaption{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;gap:15px;padding:12px 15px;background:#101621;color:#fff;font:500 6px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:1px}
+@media(min-width:1600px){.project-intro{padding-top:80px;padding-bottom:80px}.project-intro h1{font-size:88px}}
+@media(max-width:1150px){.project-intro{gap:38px;min-height:680px}.project-intro h1{font-size:65px;letter-spacing:-3.5px}.project-intro .hero-description{font-size:13px}.intro-principles{font-size:6px;gap:7px}.project-intro .hero-actions{gap:20px}.project-intro .hero-actions .text-link{font-size:11px;gap:12px}}
+@media(max-width:850px){.project-intro{gap:30px;min-height:620px;padding-top:50px;padding-bottom:50px}.project-intro h1{font-size:54px;letter-spacing:-3px}.project-intro .hero-description{font-size:12px}.project-intro .announcement{font-size:7px;letter-spacing:.5px}.project-intro .hero-actions{gap:16px}.intro-endnote{margin-top:24px}.intro-endnote strong{font-size:10px}.project-hero-art>figcaption{font-size:5px;padding:10px}}
+@media(max-width:640px){.project-intro{display:flex;gap:35px;min-height:0;padding-top:38px;padding-bottom:45px}.project-intro h1{font-size:clamp(53px,13.5vw,76px);letter-spacing:-3.3px;line-height:1.08;margin-top:24px}.project-intro .hero-description{font-size:13px;margin-top:30px}.project-intro .announcement{font-size:6px;letter-spacing:.6px}.project-intro .hero-actions{gap:20px}.project-intro .hero-actions .button{font-size:11px;gap:18px}.project-intro .hero-actions .text-link{font-size:10px;gap:9px}.intro-principles{font-size:6px;gap:6px;max-width:340px}.intro-endnote{margin-top:25px}.intro-endnote strong{font-size:11px}.intro-endnote>span{font-size:9px}.project-hero-art{align-self:stretch;width:100%;max-width:440px;margin-left:auto;margin-right:auto;box-shadow:6px 6px 0 #002b9d}.project-hero-art>figcaption{font-size:5px;padding:12px}}
 .segmented-header{max-width:none;height:72px;padding:0 0 0 34px;gap:0;position:sticky;top:0;z-index:15;border-bottom:1px solid #ffffff45;box-shadow:0 3px 18px #0031bc0b}
 .segmented-header>.wordmark{margin-right:auto;padding-right:28px;flex-shrink:0}
 .segmented-header .segmented-nav{display:flex;gap:0;align-items:stretch;align-self:stretch;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
