@@ -333,3 +333,47 @@ $('#download-kit').addEventListener('click', () => {
   toast('Your launch kit is ready to download.');
 });
 window.addEventListener('pagehide', () => {objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls.clear();});
+
+const roleDescriptions = {
+  coordinator: {name: 'PROJECT LEAD', description: 'Keeps the scope, project identity, and deliverables aligned from the first brief to the final handoff.'},
+  strategy: {name: 'STRATEGIST', description: 'Turns the idea, audience, and desired outcome into a clear positioning statement and a focused page structure.'},
+  copy: {name: 'COPYWRITER', description: 'Uses the project brief to shape the headline, introduction, call to action, launch post, and social thread.'},
+  design: {name: 'DESIGNER', description: 'Carries the logo, palette, and visual direction into a coordinated page, launch poster, and social cover.'},
+  build: {name: 'BUILDER', description: 'Brings the page, copy, and visuals together as a responsive HTML file and an organized downloadable release kit.'},
+  owner: {name: 'PROJECT OWNER', description: 'Reviews the message, identity, links, and files. Final approval and the decision to publish stay with you.'}
+};
+const workflowStages = [
+  {label: 'BRIEF', title: 'Give the work a destination.', description: 'Tell UNTILO what you are building, who it serves, and what the first release needs to communicate.', output: 'A shared project brief', role: 'coordinator', nodes: ['coordinator']},
+  {label: 'PLAN', title: 'Define what must be delivered.', description: 'Translate the brief into a concrete scope: a landing page, launch copy, poster, and social cover. Keep the audience and visual direction consistent.', output: 'A focused delivery plan', role: 'strategy', nodes: ['coordinator', 'strategy']},
+  {label: 'ASSEMBLE', title: 'Give every role a clear handoff.', description: 'Strategy sets the direction. Copy shapes the story. Design defines the look. Build brings the pieces together. Each role works from the same brief.', output: 'One coordinated workflow', role: 'coordinator', nodes: ['strategy', 'copy', 'design', 'build']},
+  {label: 'CREATE', title: 'Turn the direction into assets.', description: 'Use your project details and selected palette to prepare page content, social copy, a launch poster, and a cover. Review the results together in the studio.', output: 'Page + copy + coordinated visuals', role: 'build', nodes: ['copy', 'design', 'build']},
+  {label: 'REVIEW', title: 'Keep the final decision human.', description: 'Check the headline, audience fit, logo, links, and release copy. Update the brief and create a revised kit whenever the direction needs adjusting.', output: 'Owner-reviewed project files', role: 'owner', nodes: ['owner', 'coordinator']},
+  {label: 'RELEASE', title: 'Finish with a complete handoff.', description: 'Download the files together. Publish the HTML to your hosting provider and use the copy and visuals on your own channels. The mission closes with the assets in your hands.', output: 'A portable launch kit', role: 'owner', nodes: ['build', 'owner']}
+];
+function showRole(role) {
+  const detail = roleDescriptions[role];
+  if (!detail) return;
+  $$('.mission-node').forEach(node => node.setAttribute('aria-pressed', String(node.dataset.role === role)));
+  const container = $('#role-detail');
+  container.replaceChildren();
+  const label = document.createElement('span'); label.textContent = 'ROLE / ' + detail.name;
+  const description = document.createElement('p'); description.textContent = detail.description;
+  container.append(label, description);
+}
+function showStage(index) {
+  const stage = workflowStages[index];
+  if (!stage) return;
+  const number = String(index + 1).padStart(2, '0');
+  $('#mission-stage-label').textContent = number + ' / ' + stage.label;
+  $$('.mission-steps button').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.stage) === index)));
+  const content = $('#stage-content');
+  $('.stage-number', content).textContent = number + ' / ' + stage.label;
+  $('h3', content).textContent = stage.title;
+  $('p', content).textContent = stage.description;
+  $('.detail-output', content).textContent = stage.output;
+  $$('.mission-node').forEach(node => node.classList.toggle('stage-involved', stage.nodes.includes(node.dataset.role)));
+  showRole(stage.role);
+}
+$$('.mission-node').forEach(node => node.addEventListener('click', () => showRole(node.dataset.role)));
+$$('.mission-steps button').forEach(button => button.addEventListener('click', () => showStage(Number(button.dataset.stage))));
+if ($('#stage-content')) showStage(0);
