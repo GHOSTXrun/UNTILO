@@ -26,3 +26,8 @@
 #how-it-works .role-detail > span,
 #how-it-works #workflow-activity time,
 #how-it-works #workflow-activity span {color:#111111}
+
+.token-live{display:flex;justify-content:space-between;width:100%;margin-top:20px;background:#dfff00;color:#11161f;border:1px solid #11161f;min-height:52px;font-size:14px;border-radius:0;box-shadow:3px 3px 0 #0046fd}
+.token-live:hover{background:#fff}
+#faq code{font-size:13px;overflow-wrap:anywhere}
+#faq p>a{text-decoration:underline;text-underline-offset:3px}
