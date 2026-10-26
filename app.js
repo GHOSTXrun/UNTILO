@@ -377,3 +377,59 @@ function showStage(index) {
 $$('.mission-node').forEach(node => node.addEventListener('click', () => showRole(node.dataset.role)));
 $$('.mission-steps button').forEach(button => button.addEventListener('click', () => showStage(Number(button.dataset.stage))));
 if ($('#stage-content')) showStage(0);
+
+const sectionLinks = $$('[data-nav-section]');
+function activateSection(id) {
+  sectionLinks.forEach(link => {
+    if (link.dataset.navSection === id) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}
+sectionLinks.forEach(link => link.addEventListener('click', () => activateSection(link.dataset.navSection)));
+if ('IntersectionObserver' in window) {
+  const sectionObserver = new IntersectionObserver(entries => {
+    const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    if (visible.length) activateSection(visible[0].target.id);
+  }, {rootMargin: '-75px 0px -45% 0px', threshold: [0, .1, .3]});
+  sectionLinks.forEach(link => {const section = document.getElementById(link.dataset.navSection); if (section) sectionObserver.observe(section);});
+}
+
+const walletButton = $('#connect-wallet');
+let connectedWallet = null;
+function updateWalletAddress(address) {
+  const value = address ? String(address) : '';
+  walletButton.textContent = value ? value.slice(0, 4) + '...' + value.slice(-4) : 'CONNECT WALLET';
+  walletButton.classList.toggle('is-connected', Boolean(value));
+  walletButton.title = value ? value + ' - Click to disconnect' : 'Connect an optional Solana wallet';
+  if (!value) connectedWallet = null;
+}
+walletButton?.addEventListener('click', async () => {
+  walletButton.disabled = true;
+  try {
+    if (connectedWallet) {
+      await connectedWallet.disconnect();
+      updateWalletAddress(null);
+      toast('Wallet disconnected.');
+      return;
+    }
+    const provider = window.phantom?.solana || (window.solana?.isPhantom ? window.solana : null) || window.solflare;
+    if (!provider || typeof provider.connect !== 'function') {
+      toast('No Solana wallet detected. Open this site in Phantom or Solflare to connect.');
+      return;
+    }
+    const response = await provider.connect();
+    const address = response?.publicKey || provider.publicKey;
+    if (!address) throw new Error('No address returned');
+    connectedWallet = provider;
+    updateWalletAddress(address);
+    if (typeof provider.on === 'function') {
+      provider.on('accountChanged', address => updateWalletAddress(address));
+      provider.on('disconnect', () => updateWalletAddress(null));
+    }
+    toast('Wallet connected. No payment or signature requested.');
+  } catch (error) {
+    toast(error?.code === 4001 ? 'Wallet connection was cancelled.' : 'Unable to connect the wallet. Please try again.');
+  } finally {
+    walletButton.disabled = false;
+  }
+});
