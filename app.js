@@ -601,14 +601,8 @@ function renderPlayback() {
   $('#workflow-percent').textContent = percent + '%';
   $('#workflow-progress-fill').style.width = percent + '%';
   $('.workflow-progress').setAttribute('aria-valuenow', String(percent));
-  $('#workflow-clock').textContent = clockFormat(playback.elapsed);
   const running = !playback.paused && playback.visible && !document.hidden;
   $('.mission-console').classList.toggle('is-playing', running);
-  const toggle = $('#workflow-playback-toggle');
-  toggle.setAttribute('aria-pressed', String(playback.paused));
-  toggle.setAttribute('aria-label', playback.paused ? 'Resume workflow playback' : 'Pause workflow playback');
-  toggle.replaceChildren(document.createTextNode(playback.paused ? 'Resume ' : 'Pause '));
-  const icon = document.createElement('span'); icon.setAttribute('aria-hidden', 'true'); icon.textContent = playback.paused ? '\u25b6' : '\u275a\u275a'; toggle.append(icon);
   $$('.mission-node').forEach(node => {
     let state = $('.node-motion-state', node);
     if (!state) {state = document.createElement('em'); state.className = 'node-motion-state'; state.setAttribute('aria-hidden', 'true'); node.append(state);}
@@ -633,21 +627,28 @@ function playbackFrame(now) {
   if (!playback.paused && playback.visible && !document.hidden && now - playback.lastRender > 180) {renderPlayback(); playback.lastRender = now;}
   requestAnimationFrame(playbackFrame);
 }
-$('#workflow-playback-toggle').addEventListener('click', () => {
-  playback.paused = !playback.paused;
-  recordWorkflowActivity(playback.paused ? 'Playback paused for a closer look.' : 'Workflow playback resumed.');
-  renderPlayback();
-});
+let inspectionResumeTimer;
+function queuePlaybackResume() {
+  clearTimeout(inspectionResumeTimer);
+  inspectionResumeTimer = setTimeout(() => {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      playback.paused = false;
+      renderPlayback();
+    }
+  }, 12000);
+}
 $$('.mission-steps button').forEach(button => button.addEventListener('click', () => {
   playback.stage = Number(button.dataset.stage);
   playback.stageElapsed = 0;
   playback.paused = true;
   recordWorkflowActivity('Inspecting stage ' + (playback.stage + 1) + ': ' + workflowStages[playback.stage].label.toLowerCase() + '.');
+  queuePlaybackResume();
   renderPlayback();
 }));
 $$('.mission-node').forEach(node => node.addEventListener('click', () => {
   playback.paused = true;
   recordWorkflowActivity('Inspecting the ' + roleDescriptions[node.dataset.role].name.toLowerCase() + ' role.');
+  queuePlaybackResume();
   renderPlayback();
 }));
 document.addEventListener('visibilitychange', renderPlayback);
