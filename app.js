@@ -559,3 +559,108 @@ for (const [id, key, filename] of [['download-poster', 'poster', 'launch-poster.
     finally {button.disabled = false;}
   });
 }
+
+// A local process playback: these counters describe the diagram, not live AI jobs.
+const playback = {
+  stage: 0, stageElapsed: 0, elapsed: 0, duration: 5600,
+  paused: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  visible: false, lastFrame: 0, lastRender: 0, log: []
+};
+const stageActivities = [
+  'Brief and audience brought into focus.',
+  'Scope and delivery plan highlighted.',
+  'Strategy, copy, design, and build connected.',
+  'Page, story, and visual handoffs in focus.',
+  'Owner review and approval path highlighted.',
+  'Release files and final handoff in focus.'
+];
+const clockFormat = milliseconds => {
+  const seconds = Math.floor(milliseconds / 1000);
+  return String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0');
+};
+function recordWorkflowActivity(message) {
+  playback.log.unshift({time: clockFormat(playback.elapsed), message});
+  playback.log = playback.log.slice(0, 3);
+  const list = $('#workflow-activity');
+  list.replaceChildren();
+  for (const item of playback.log) {
+    const row = document.createElement('li'), time = document.createElement('time'), text = document.createElement('span');
+    time.textContent = item.time; text.textContent = item.message;
+    row.append(time, text); list.append(row);
+  }
+}
+function renderPlayback() {
+  const stage = workflowStages[playback.stage];
+  const percent = Math.min(100, Math.floor(((playback.stage + playback.stageElapsed / playback.duration) / workflowStages.length) * 100));
+  const stageCount = $('#workflow-stage-count');
+  stageCount.replaceChildren(document.createTextNode(String(playback.stage + 1).padStart(2, '0') + ' '));
+  const total = document.createElement('small'); total.textContent = '/ 06'; stageCount.append(total);
+  const roleCount = $('#workflow-role-count');
+  roleCount.replaceChildren(document.createTextNode(stage.nodes.length + ' '));
+  const roleTotal = document.createElement('small'); roleTotal.textContent = '/ 6'; roleCount.append(roleTotal);
+  $('#workflow-percent').textContent = percent + '%';
+  $('#workflow-progress-fill').style.width = percent + '%';
+  $('.workflow-progress').setAttribute('aria-valuenow', String(percent));
+  $('#workflow-clock').textContent = clockFormat(playback.elapsed);
+  const running = !playback.paused && playback.visible && !document.hidden;
+  $('.mission-console').classList.toggle('is-playing', running);
+  const toggle = $('#workflow-playback-toggle');
+  toggle.setAttribute('aria-pressed', String(playback.paused));
+  toggle.setAttribute('aria-label', playback.paused ? 'Resume workflow playback' : 'Pause workflow playback');
+  toggle.replaceChildren(document.createTextNode(playback.paused ? 'Resume ' : 'Pause '));
+  const icon = document.createElement('span'); icon.setAttribute('aria-hidden', 'true'); icon.textContent = playback.paused ? '\u25b6' : '\u275a\u275a'; toggle.append(icon);
+  $$('.mission-node').forEach(node => {
+    let state = $('.node-motion-state', node);
+    if (!state) {state = document.createElement('em'); state.className = 'node-motion-state'; state.setAttribute('aria-hidden', 'true'); node.append(state);}
+    state.textContent = stage.nodes.includes(node.dataset.role) ? 'IN FOCUS' : 'CONNECTED';
+  });
+}
+function advancePlayback() {
+  playback.stage = (playback.stage + 1) % workflowStages.length;
+  playback.stageElapsed = 0;
+  showStage(playback.stage);
+  recordWorkflowActivity(stageActivities[playback.stage]);
+}
+function playbackFrame(now) {
+  const delta = playback.lastFrame ? Math.min(250, now - playback.lastFrame) : 0;
+  playback.lastFrame = now;
+  if (!playback.paused && playback.visible && !document.hidden) {
+    playback.elapsed += delta;
+    playback.stageElapsed += delta;
+    const hold = playback.stage === workflowStages.length - 1 ? 1000 : 0;
+    if (playback.stageElapsed >= playback.duration + hold) advancePlayback();
+  }
+  if (!playback.paused && playback.visible && !document.hidden && now - playback.lastRender > 180) {renderPlayback(); playback.lastRender = now;}
+  requestAnimationFrame(playbackFrame);
+}
+$('#workflow-playback-toggle').addEventListener('click', () => {
+  playback.paused = !playback.paused;
+  recordWorkflowActivity(playback.paused ? 'Playback paused for a closer look.' : 'Workflow playback resumed.');
+  renderPlayback();
+});
+$$('.mission-steps button').forEach(button => button.addEventListener('click', () => {
+  playback.stage = Number(button.dataset.stage);
+  playback.stageElapsed = 0;
+  playback.paused = true;
+  recordWorkflowActivity('Inspecting stage ' + (playback.stage + 1) + ': ' + workflowStages[playback.stage].label.toLowerCase() + '.');
+  renderPlayback();
+}));
+$$('.mission-node').forEach(node => node.addEventListener('click', () => {
+  playback.paused = true;
+  recordWorkflowActivity('Inspecting the ' + roleDescriptions[node.dataset.role].name.toLowerCase() + ' role.');
+  renderPlayback();
+}));
+document.addEventListener('visibilitychange', renderPlayback);
+window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => {
+  if (event.matches) {playback.paused = true; renderPlayback();}
+});
+if ('IntersectionObserver' in window) {
+  const playbackObserver = new IntersectionObserver(entries => {
+    playback.visible = entries[0].isIntersecting;
+    renderPlayback();
+  }, {threshold: 0.08});
+  playbackObserver.observe($('.mission-console'));
+} else playback.visible = true;
+recordWorkflowActivity(stageActivities[0]);
+renderPlayback();
+requestAnimationFrame(playbackFrame);

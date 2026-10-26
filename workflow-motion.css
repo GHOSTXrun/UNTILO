@@ -1,0 +1,45 @@
+@charset "UTF-8";
+.playback-badge{display:inline-flex;align-items:center;gap:9px;color:#dfff00!important}
+.playback-badge i{width:6px;height:6px;background:#dfff00;border-radius:50%;box-shadow:0 0 0 4px #dfff0010}
+.mission-console.is-playing .playback-badge i{animation:workflow-beacon 1.8s ease-in-out infinite}
+.mission-connections path{stroke:#0046fd;stroke-opacity:.2;stroke-width:1.5}
+.mission-console.is-playing .mission-connections path{animation:workflow-flow 1.5s linear infinite;stroke:#0046fd;stroke-opacity:.65}
+.mission-node{transition:background .35s,border-color .35s,box-shadow .35s,transform .35s}
+.mission-node.stage-involved{border-color:#0046fd;background:#edf3ff}
+.mission-console.is-playing .mission-node.stage-involved{animation:workflow-node-glow 2.5s ease-in-out infinite}
+.mission-console.is-playing .mission-node.stage-involved>i{background:#fb4f16;color:#11161f}
+.node-motion-state{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font:600 7px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.8px;color:#8d9eb9;pointer-events:none}
+.mission-node.stage-involved .node-motion-state{color:#0046fd}
+.mission-detail #stage-content{transition:opacity .2s}
+.mission-activity{padding-top:18px;margin-top:20px;border-top:1px solid #e3e9f3}
+#workflow-activity{list-style:none;padding:0;margin:10px 0 0}
+#workflow-activity li{display:grid;grid-template-columns:36px 1fr;gap:9px;padding:7px 0;border-bottom:1px solid #f0f3f8;animation:workflow-log-in .3s ease-out}
+#workflow-activity li:last-child{border-bottom:0}
+#workflow-activity time{font:500 9px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;color:#0046fd}
+#workflow-activity span{font-size:11px;line-height:1.7;color:#7b89a0}
+#workflow-activity li:first-child span{color:#26374f}
+.workflow-telemetry{display:grid;grid-template-columns:145px 170px minmax(180px,1fr) 260px;background:#11161f;color:white;border-top:1px solid #11161f;align-items:stretch}
+.workflow-telemetry>div{padding:18px 22px;border-right:1px solid #ffffff20;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.workflow-telemetry>div:last-child{border-right:0}
+.workflow-telemetry>div>span{font:500 9px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.5px;color:#a7b2c7}
+.workflow-telemetry strong{font:600 25px/1.2 var(--display);color:#dfff00;margin-top:7px;font-variant-numeric:tabular-nums}
+.workflow-telemetry strong small{font-size:12px;color:#6e7a90;font-weight:400}
+.workflow-progress-cell>span{display:flex;justify-content:space-between;gap:12px}
+.workflow-progress-cell b{font-size:12px;color:#dfff00;font-weight:500;font-variant-numeric:tabular-nums}
+.workflow-progress{height:6px;background:#ffffff15;margin-top:15px;overflow:hidden}
+.workflow-progress i{display:block;width:0;height:100%;background:#dfff00;transition:width .15s linear;box-shadow:0 0 14px #dfff0030}
+.workflow-telemetry .workflow-playback-controls{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:16px}
+.workflow-playback-controls>span{display:flex;flex-direction:column;gap:7px;font-size:8px!important;letter-spacing:0!important}
+.workflow-playback-controls b{font:500 20px/1.2 var(--display);color:#fff;font-variant-numeric:tabular-nums}
+#workflow-playback-toggle{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid #dfff0060;background:#dfff00;color:#11161f;font-size:12px;font-weight:600;min-height:44px;min-width:100px;padding:0 13px}
+#workflow-playback-toggle:hover{background:white}#workflow-playback-toggle>span{font-size:11px;line-height:1}
+.mission-console:not(.is-playing) .workflow-progress i{background:#fb4f16}
+@keyframes workflow-flow{to{stroke-dashoffset:-44}}
+@keyframes workflow-beacon{50%{box-shadow:0 0 0 6px #dfff0025;opacity:.65}}
+@keyframes workflow-node-glow{50%{box-shadow:3px 4px 0 #0046fd,0 0 0 5px #0046fd08}}
+@keyframes workflow-log-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1200px){.workflow-telemetry{grid-template-columns:125px 145px minmax(150px,1fr) 235px}.workflow-telemetry>div{padding:17px}.workflow-telemetry>div>span{font-size:8px}.workflow-playback-controls b{font-size:18px}}
+@media(min-width:641px) and (max-width:1000px){.mission-detail{grid-template-columns:1fr 1fr}.mission-activity{grid-column:2;grid-row:2;border-top:0;border-left:1px solid #e3e9f3;padding:0 0 0 25px;margin-top:0}.mission-detail .role-detail{grid-column:1/-1;border-left:0;border-top:1px solid #e3e9f3;padding:18px 0 0;margin-top:6px}.workflow-telemetry{grid-template-columns:110px 130px 1fr 220px}.workflow-telemetry>div{padding:15px}.workflow-telemetry>div>span{font-size:7px}.workflow-playback-controls>span{font-size:6px!important}.workflow-playback-controls b{font-size:17px}}
+@media(max-width:720px){.workflow-telemetry{grid-template-columns:1fr 1fr}.workflow-telemetry>div{padding:17px 19px}.workflow-telemetry>div:nth-child(2){border-right:0}.workflow-telemetry>div:nth-child(n+3){border-top:1px solid #ffffff20}.workflow-telemetry>div>span{font-size:9px}.workflow-telemetry strong{font-size:24px}.workflow-telemetry .workflow-playback-controls{gap:12px;padding-left:16px;padding-right:16px}.workflow-playback-controls>span{font-size:7px!important}.workflow-playback-controls b{font-size:18px}#workflow-playback-toggle{font-size:11px;min-width:91px;padding:0 11px;gap:10px}.workflow-progress-cell b{font-size:11px}.node-motion-state{font-size:6px;letter-spacing:.5px}.mission-activity{margin-top:21px;padding-top:18px}#workflow-activity span{font-size:12px}#workflow-activity time{font-size:10px}#workflow-activity li{grid-template-columns:40px 1fr}.playback-badge{font-size:9px!important}.mission-topbar>span:last-child.playback-badge{display:inline-flex}}
+@media(max-width:380px){.workflow-telemetry .workflow-playback-controls{flex-wrap:wrap;gap:10px}.workflow-playback-controls>span{flex-direction:row;align-items:center;gap:10px}.workflow-playback-controls b{font-size:17px}#workflow-playback-toggle{width:100%}}
+@media(prefers-reduced-motion:reduce){.mission-console *{animation:none!important;transition:none!important}}
