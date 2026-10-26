@@ -1,0 +1,28 @@
+@charset "UTF-8";
+/* Match the black introduction text across numbered chapters 02 through 06. */
+#how-it-works > .section-wrap > .eyebrow,
+#how-it-works .section-heading-row,
+#how-it-works .section-heading-row *,
+#how-it-works .workflow-bottom *,
+#deliverables .section-intro,
+#deliverables .section-intro *,
+#deliverables .kit-card-footer *,
+.handoff-section > div:first-child,
+.handoff-section > div:first-child *,
+#launch .launch-inner > div:first-child,
+#launch .launch-inner > div:first-child *,
+#faq,
+#faq * {color:#111111}
+
+#how-it-works .mission-body p,
+#how-it-works .mission-body dt,
+#how-it-works .mission-body dd,
+#how-it-works .mission-body h3,
+#how-it-works .mission-node small,
+#how-it-works .console-eyebrow,
+#how-it-works .stage-number,
+#how-it-works .detail-output-label,
+#how-it-works .detail-output,
+#how-it-works .role-detail > span,
+#how-it-works #workflow-activity time,
+#how-it-works #workflow-activity span {color:#111111}
