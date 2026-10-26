@@ -439,46 +439,6 @@ if ('IntersectionObserver' in window) {
   sectionLinks.forEach(link => {const section = document.getElementById(link.dataset.navSection); if (section) sectionObserver.observe(section);});
 }
 
-const walletButton = $('#connect-wallet');
-let connectedWallet = null;
-function updateWalletAddress(address) {
-  const value = address ? String(address) : '';
-  walletButton.textContent = value ? value.slice(0, 4) + '...' + value.slice(-4) : 'CONNECT WALLET';
-  walletButton.classList.toggle('is-connected', Boolean(value));
-  walletButton.title = value ? value + ' - Click to disconnect' : 'Connect an optional Solana wallet';
-  if (!value) connectedWallet = null;
-}
-walletButton?.addEventListener('click', async () => {
-  walletButton.disabled = true;
-  try {
-    if (connectedWallet) {
-      await connectedWallet.disconnect();
-      updateWalletAddress(null);
-      toast('Wallet disconnected.');
-      return;
-    }
-    const provider = window.phantom?.solana || (window.solana?.isPhantom ? window.solana : null) || window.solflare;
-    if (!provider || typeof provider.connect !== 'function') {
-      toast('No Solana wallet detected. Open this site in Phantom or Solflare to connect.');
-      return;
-    }
-    const response = await provider.connect();
-    const address = response?.publicKey || provider.publicKey;
-    if (!address) throw new Error('No address returned');
-    connectedWallet = provider;
-    updateWalletAddress(address);
-    if (typeof provider.on === 'function') {
-      provider.on('accountChanged', address => updateWalletAddress(address));
-      provider.on('disconnect', () => updateWalletAddress(null));
-    }
-    toast('Wallet connected. No payment or signature requested.');
-  } catch (error) {
-    toast(error?.code === 4001 ? 'Wallet connection was cancelled.' : 'Unable to connect the wallet. Please try again.');
-  } finally {
-    walletButton.disabled = false;
-  }
-});
-
 function updatePostLength() {
   const length = Array.from($('#edit-post').value).length;
   $('#post-length').textContent = length + ' characters';
