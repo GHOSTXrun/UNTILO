@@ -1,5 +1,8 @@
 'use strict';
 
+// Set the official Solana token address here after the launch is announced.
+const UNTILO_CONTRACT_ADDRESS = '';
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const studio = $('#studio');
@@ -333,6 +336,33 @@ $('#download-kit').addEventListener('click', () => {
   toast('Your launch kit is ready to download.');
 });
 window.addEventListener('pagehide', () => {objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls.clear();});
+
+const hasOfficialContract = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(UNTILO_CONTRACT_ADDRESS);
+const contractCopyButton = $('#copy-contract');
+if (hasOfficialContract && contractCopyButton) {
+  $('#official-ca').textContent = UNTILO_CONTRACT_ADDRESS;
+  $('#contract-status').textContent = 'Verify this full address before interacting.';
+  $('#contract-network-status').textContent = 'ANNOUNCED';
+  $('.ca-row strong').textContent = UNTILO_CONTRACT_ADDRESS;
+  $('.ca-row strong').style.overflowWrap = 'anywhere';
+  $('.ca-row strong').style.fontSize = '15px';
+  $('.ca-row > span').textContent = 'SOLANA';
+  $('.token-panel > p').textContent = 'Verify the official contract address above before interacting.';
+  contractCopyButton.disabled = false;
+  contractCopyButton.replaceChildren(document.createTextNode('COPY CA '));
+  const icon = document.createElement('span'); icon.textContent = '\u2197'; icon.setAttribute('aria-hidden', 'true'); contractCopyButton.append(icon);
+  contractCopyButton.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(UNTILO_CONTRACT_ADDRESS);
+      toast('Official contract address copied.');
+    } catch {
+      const selection = window.getSelection();
+      const range = document.createRange(); range.selectNodeContents($('#official-ca'));
+      selection.removeAllRanges(); selection.addRange(range);
+      toast('The address is selected. Copy it manually.');
+    }
+  });
+}
 
 const roleDescriptions = {
   coordinator: {name: 'PROJECT LEAD', description: 'Keeps the scope, project identity, and deliverables aligned from the first brief to the final handoff.'},
