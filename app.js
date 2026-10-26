@@ -42,10 +42,10 @@ function cancelRun() {
   form.removeAttribute('aria-busy');
   if (!currentKit) {
     $('#output-status').textContent = 'AWAITING BRIEF';
-    $$('.progress-list li').forEach(node => {node.className = ''; $('i', node).textContent = '○';});
+    $$('.progress-list li').forEach(node => {node.className = ''; $('i', node).textContent = '\u25cb';});
   } else {
     $('#output-status').textContent = 'DEMO KIT READY';
-    $$('.progress-list li').forEach(node => {node.className = 'done'; $('i', node).textContent = '✓';});
+    $$('.progress-list li').forEach(node => {node.className = 'done'; $('i', node).textContent = '\u2713';});
   }
 }
 $$('[data-open-studio]').forEach(button => button.addEventListener('click', openStudio));
@@ -118,7 +118,7 @@ $('#project-logo').addEventListener('change', () => {
     logoReady = Promise.resolve();
     return;
   }
-  status.textContent = 'Checking your logo…';
+  status.textContent = 'Checking your logo\u2026';
   logoReady = new Promise(resolve => {
     const reader = new FileReader();
     const fail = () => {
@@ -133,7 +133,7 @@ $('#project-logo').addEventListener('change', () => {
         if (sequence === logoSequence) {
           if (image.naturalWidth > 8192 || image.naturalHeight > 8192) {fail(); return;}
           logoData = String(reader.result);
-          status.textContent = file.name + ' · Ready. Stays on your device.';
+          status.textContent = file.name + ' \u00b7 Ready. Stays on your device.';
         }
         resolve();
       };
@@ -158,9 +158,9 @@ function makeLanding(brief, palette) {
   const mark = brief.logo ? `<img src="${escapeHTML(brief.logo)}" alt="${n} logo">` : `<span class="mark">${escapeHTML(Array.from(brief.name)[0].toUpperCase())}</span>`;
   const destination = brief.url ? escapeHTML(brief.url) : '#about';
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${d}"><title>${n} — Meet what’s next.</title><style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${d}"><title>${n} \u2014 Meet what\u2019s next.</title><style>
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;font-family:Arial,sans-serif;color:${palette.ink}}a{color:inherit;text-decoration:none}header,main,footer{max-width:1100px;margin:auto}header{padding:25px 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8ebf1;font-size:12px}.brand{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:700;letter-spacing:-.6px}.brand img,.mark{width:32px;height:32px;object-fit:cover;border-radius:8px}.mark{display:grid;place-items:center;background:${palette.accent};color:white}header nav{display:flex;gap:22px}.hero{padding:85px 6% 70px;position:relative;overflow:hidden}.eyebrow{font-size:9px;letter-spacing:2px;color:${palette.accent};font-weight:700}h1{font-size:clamp(43px,8vw,94px);line-height:1.02;letter-spacing:-.06em;max-width:850px;margin:28px 0;overflow-wrap:anywhere}h1 span{color:${palette.accent}}.intro{max-width:590px;color:#687182;line-height:1.8;font-size:16px;overflow-wrap:anywhere}.cta{display:inline-block;margin-top:25px;background:${palette.accent};color:white;padding:16px 22px;border-radius:6px;font-size:12px}.audience{padding:40px 6%;background:${palette.soft};border-top:1px solid #e8ebf1}.audience h2{font-size:28px;line-height:1.3;letter-spacing:-1px;max-width:700px;overflow-wrap:anywhere}.audience p{font-size:14px;line-height:1.7;color:#687182;max-width:650px;overflow-wrap:anywhere}.values{display:grid;grid-template-columns:repeat(3,1fr);padding:38px 6%;gap:30px}.values span{font-size:10px;color:${palette.accent}}.values h3{font-size:16px;letter-spacing:-.4px}.values p{font-size:12px;line-height:1.7;color:#687182}footer{padding:25px 6%;border-top:1px solid #e8ebf1;display:flex;gap:20px;justify-content:space-between;font-size:9px;color:#8e98aa}.review{padding:12px 6%;font-size:9px;color:#8e98aa;border-top:1px solid #e8ebf1;margin:0 auto;max-width:1100px}@media(max-width:560px){header{padding:18px 6%}header nav{gap:13px;font-size:10px}.brand{font-size:15px}.hero{padding:50px 6%}.intro{font-size:14px}.values{grid-template-columns:1fr;gap:15px}.audience h2{font-size:24px}footer{flex-wrap:wrap}.eyebrow{font-size:8px}}
-</style></head><body><header><a class="brand" href="#">${mark}${n}</a><nav><a href="#about">About</a><a href="${destination}">${brief.url ? 'Explore' : 'Learn more'} ↗</a></nav></header><main><section class="hero"><p class="eyebrow">A NEW IDEA. A NEW CHAPTER.</p><h1>Meet <span>${n}.</span><br>Meet what’s next.</h1><p class="intro">${d}</p><a class="cta" href="${destination}">${brief.url ? 'Explore ' + n : 'Discover the idea'} ↗</a></section><section class="audience" id="about"><p class="eyebrow">BUILT WITH YOU IN MIND</p><h2>A fresh starting point for ${a}.</h2><p>${d}</p></section><section class="values"><article><span>01 / THE IDEA</span><h3>A clear direction.</h3><p>Explore the project, understand the vision, and see where it’s headed.</p></article><article><span>02 / THE PEOPLE</span><h3>Made for your next chapter.</h3><p>A project shaped around the people it hopes to serve.</p></article><article><span>03 / THE START</span><h3>Follow what comes next.</h3><p>This is the beginning. Visit the project for the latest updates.</p></article></section></main><footer><strong>${n}</strong><span>A new chapter starts here.</span><span>Created with UNTILO</span></footer><p class="review">Template draft · Review copy and links before publishing.</p></body></html>`;
+</style></head><body><header><a class="brand" href="#">${mark}${n}</a><nav><a href="#about">About</a><a href="${destination}">${brief.url ? 'Explore' : 'Learn more'} \u2197</a></nav></header><main><section class="hero"><p class="eyebrow">A NEW IDEA. A NEW CHAPTER.</p><h1>Meet <span>${n}.</span><br>Meet what\u2019s next.</h1><p class="intro">${d}</p><a class="cta" href="${destination}">${brief.url ? 'Explore ' + n : 'Discover the idea'} \u2197</a></section><section class="audience" id="about"><p class="eyebrow">BUILT WITH YOU IN MIND</p><h2>A fresh starting point for ${a}.</h2><p>${d}</p></section><section class="values"><article><span>01 / THE IDEA</span><h3>A clear direction.</h3><p>Explore the project, understand the vision, and see where it\u2019s headed.</p></article><article><span>02 / THE PEOPLE</span><h3>Made for your next chapter.</h3><p>A project shaped around the people it hopes to serve.</p></article><article><span>03 / THE START</span><h3>Follow what comes next.</h3><p>This is the beginning. Visit the project for the latest updates.</p></article></section></main><footer><strong>${n}</strong><span>A new chapter starts here.</span><span>Created with UNTILO</span></footer><p class="review">Template draft \u00b7 Review copy and links before publishing.</p></body></html>`;
 }
 function wrapWords(value, maxChars, maxLines) {
   const words = value.trim().split(/\s+/);
@@ -171,8 +171,8 @@ function wrapWords(value, maxChars, maxLines) {
     else { if (line) lines.push(line); line = word; }
   }
   if (line) lines.push(line);
-  const result = lines.slice(0, maxLines).map(text => text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text);
-  if (lines.length > maxLines) result[maxLines - 1] = result[maxLines - 1].slice(0, maxChars - 1) + '…';
+  const result = lines.slice(0, maxLines).map(text => text.length > maxChars ? text.slice(0, maxChars - 1) + '\u2026' : text);
+  if (lines.length > maxLines) result[maxLines - 1] = result[maxLines - 1].slice(0, maxChars - 1) + '\u2026';
   return result;
 }
 function makeVisual(brief, palette, cover = false) {
@@ -182,13 +182,13 @@ function makeVisual(brief, palette, cover = false) {
   const titleY = cover ? 291 : 535;
   const mark = brief.logo ? `<image href="${escapeHTML(brief.logo)}" x="65" y="56" width="65" height="65" preserveAspectRatio="xMidYMid meet"/>` : `<rect x="65" y="56" width="65" height="65" rx="16" fill="white" fill-opacity=".15"/><text x="98" y="102" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="37" font-weight="700">${escapeHTML(Array.from(brief.name)[0].toUpperCase())}</text>`;
   const tagline = wrapWords(brief.description, cover ? 88 : 58, 2);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${palette.accent}"/><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" opacity=".15"/></pattern></defs><rect width="${w}" height="${h}" fill="url(#grid)"/><circle cx="${w - 120}" cy="${cover ? 190 : 240}" r="${cover ? 170 : 240}" fill="none" stroke="white" stroke-opacity=".15" stroke-width="45"/><path d="M${w - 240} ${cover ? 310 : 360}l200 -200m-160 0h160v160" stroke="white" stroke-opacity=".85" stroke-width="23" fill="none"/>${mark}<text x="65" y="${cover ? 192 : 425}" fill="white" opacity=".7" font-family="Arial,sans-serif" font-size="15" letter-spacing="4">YOUR NEXT CHAPTER STARTS HERE.</text><text fill="white" font-family="Arial,sans-serif" font-size="${titleSize}" font-weight="700" letter-spacing="-4">${lines.map((line, index) => `<tspan x="60" y="${titleY + index * titleSize * 1.08}">${escapeHTML(line)}</tspan>`).join('')}</text><text fill="white" opacity=".8" font-family="Arial,sans-serif" font-size="${cover ? 19 : 23}">${tagline.map((line, index) => `<tspan x="65" y="${titleY + lines.length * titleSize * 1.08 + 20 + index * 34}">${escapeHTML(line)}</tspan>`).join('')}</text><path d="M65 ${h - 100}H${w - 65}" stroke="white" stroke-opacity=".3"/><text x="65" y="${h - 58}" fill="white" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">MEET WHAT’S NEXT.</text><text x="${w - 65}" y="${h - 58}" text-anchor="end" fill="white" opacity=".65" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">CREATED WITH UNTILO ↗</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${palette.accent}"/><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" opacity=".15"/></pattern></defs><rect width="${w}" height="${h}" fill="url(#grid)"/><circle cx="${w - 120}" cy="${cover ? 190 : 240}" r="${cover ? 170 : 240}" fill="none" stroke="white" stroke-opacity=".15" stroke-width="45"/><path d="M${w - 240} ${cover ? 310 : 360}l200 -200m-160 0h160v160" stroke="white" stroke-opacity=".85" stroke-width="23" fill="none"/>${mark}<text x="65" y="${cover ? 192 : 425}" fill="white" opacity=".7" font-family="Arial,sans-serif" font-size="15" letter-spacing="4">YOUR NEXT CHAPTER STARTS HERE.</text><text fill="white" font-family="Arial,sans-serif" font-size="${titleSize}" font-weight="700" letter-spacing="-4">${lines.map((line, index) => `<tspan x="60" y="${titleY + index * titleSize * 1.08}">${escapeHTML(line)}</tspan>`).join('')}</text><text fill="white" opacity=".8" font-family="Arial,sans-serif" font-size="${cover ? 19 : 23}">${tagline.map((line, index) => `<tspan x="65" y="${titleY + lines.length * titleSize * 1.08 + 20 + index * 34}">${escapeHTML(line)}</tspan>`).join('')}</text><path d="M65 ${h - 100}H${w - 65}" stroke="white" stroke-opacity=".3"/><text x="65" y="${h - 58}" fill="white" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">MEET WHAT\u2019S NEXT.</text><text x="${w - 65}" y="${h - 58}" text-anchor="end" fill="white" opacity=".65" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">CREATED WITH UNTILO \u2197</text></svg>`;
 }
 function makeKit(brief) {
   const palette = palettes[brief.style] || palettes.electric;
-  const shortDescription = brief.description.length > 150 ? brief.description.slice(0, 147).trim() + '…' : brief.description;
+  const shortDescription = brief.description.length > 150 ? brief.description.slice(0, 147).trim() + '\u2026' : brief.description;
   const post = `Meet ${brief.name}.\n\n${shortDescription}\n\n${brief.url ? 'Explore: ' + brief.url : 'Follow along for what comes next.'}`;
-  const thread = `1/ Introducing ${brief.name}.\n${brief.description}\n\n2/ Built for ${brief.audience}.\nA new idea starts with understanding who it’s for. That’s where our story begins.\n\n3/ This is our starting point.\n${brief.url ? 'Take a look: ' + brief.url : 'Stay close for project updates and the next chapter.'}`;
+  const thread = `1/ Introducing ${brief.name}.\n${brief.description}\n\n2/ Built for ${brief.audience}.\nA new idea starts with understanding who it\u2019s for. That\u2019s where our story begins.\n\n3/ This is our starting point.\n${brief.url ? 'Take a look: ' + brief.url : 'Stay close for project updates and the next chapter.'}`;
   return {brief, html: makeLanding(brief, palette), post, thread, poster: makeVisual(brief, palette), cover: makeVisual(brief, palette, true)};
 }
 function setTab(name, focus = false) {
@@ -213,7 +213,7 @@ $$('.output-tabs [role=tab]').forEach(tab => {
 });
 function renderKit(kit) {
   $('#page-preview').srcdoc = kit.html;
-  $('#copy-preview').textContent = `LAUNCH POST\n\n${kit.post}\n\n———\n\nINTRODUCTION THREAD\n\n${kit.thread}\n\nDraft copy: review before posting. X character limits depend on your account; edit or split longer drafts.`;
+  $('#copy-preview').textContent = `LAUNCH POST\n\n${kit.post}\n\n\u2014\u2014\u2014\n\nINTRODUCTION THREAD\n\n${kit.thread}\n\nDraft copy: review before posting. X character limits depend on your account; edit or split longer drafts.`;
   if (posterObjectUrl) {URL.revokeObjectURL(posterObjectUrl); objectUrls.delete(posterObjectUrl);}
   posterObjectUrl = URL.createObjectURL(new Blob([kit.poster], {type: 'image/svg+xml'}));
   objectUrls.add(posterObjectUrl);
@@ -251,12 +251,12 @@ form.addEventListener('submit', async event => {
     try { const {logo, ...saved} = brief; localStorage.setItem(storageKey, JSON.stringify(saved)); } catch { /* Optional browser storage. */ }
     $('#output-status').textContent = 'BUILDING DEMO';
     const steps = $$('.progress-list li');
-    steps.forEach(node => {node.className = ''; $('i', node).textContent = '○';});
+    steps.forEach(node => {node.className = ''; $('i', node).textContent = '\u25cb';});
     for (const step of steps) {
       step.classList.add('active');
       await new Promise(resolve => setTimeout(resolve, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 320));
       if (run !== runSequence) return;
-      step.classList.remove('active'); step.classList.add('done'); $('i', step).textContent = '✓';
+      step.classList.remove('active'); step.classList.add('done'); $('i', step).textContent = '\u2713';
     }
     currentKit = makeKit(brief);
     renderKit(currentKit);
@@ -299,7 +299,7 @@ function makeZip(files) {
   const locals = [], centrals = [];
   let offset = 0;
   for (const file of files) {
-    const name = encoder.encode(file.name), data = encoder.encode(file.content), crc = crc32(data);
+    const name = encoder.encode(file.name), data = encoder.encode((file.name.endsWith('.txt') ? '\uFEFF' : '') + file.content), crc = crc32(data);
     const local = new Uint8Array(30 + name.length), lv = new DataView(local.buffer);
     lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x0800, true); lv.setUint16(12, 0x21, true);
     lv.setUint32(14, crc, true); lv.setUint32(18, data.length, true); lv.setUint32(22, data.length, true); lv.setUint16(26, name.length, true); local.set(name, 30);
@@ -317,7 +317,7 @@ $('#download-kit').addEventListener('click', () => {
   const kit = currentKit;
   const files = [
     {name: 'index.html', content: kit.html},
-    {name: 'launch-copy.txt', content: `UNTILO LAUNCH KIT — TEMPLATE DRAFT\n\nPROJECT: ${kit.brief.name}\n\nLAUNCH POST\n${kit.post}\n\nINTRODUCTION THREAD\n${kit.thread}\n\nReview all copy and links before publishing. Edit or split longer posts for your X account limits.`},
+    {name: 'launch-copy.txt', content: `UNTILO LAUNCH KIT \u2014 TEMPLATE DRAFT\n\nPROJECT: ${kit.brief.name}\n\nLAUNCH POST\n${kit.post}\n\nINTRODUCTION THREAD\n${kit.thread}\n\nReview all copy and links before publishing. Edit or split longer posts for your X account limits.`},
     {name: 'launch-poster.svg', content: kit.poster},
     {name: 'social-cover.svg', content: kit.cover},
     {name: 'READ-ME.txt', content: 'Created with UNTILO frontend demo.\n\nOpen index.html in your browser to preview your landing page. Upload index.html to your preferred static hosting provider to publish it. Review wording and replace any unfinished links first.\n\nThe SVG files are editable vector images: launch-poster.svg (1080 x 1080) and social-cover.svg (1200 x 630). Convert them to PNG in a design tool before uploading to platforms that do not accept SVG.\n\nLaunch copy is in launch-copy.txt. These files were created from local templates, not live AI execution. No deployment or posting has been performed.\n'}
