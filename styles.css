@@ -70,6 +70,12 @@ body .notes .button-blue{background:#fff;color:#0046fd}
 .concept-section{padding-top:90px;padding-bottom:70px}
 .project-intro{gap:64px;grid-template-columns:1fr 1.03fr;padding-top:65px;padding-bottom:65px;min-height:740px}
 .project-intro h1{font-size:clamp(60px,5.6vw,83px);line-height:1.08;letter-spacing:-4px;margin-top:28px}
+.project-intro .intro-line{display:block;color:#fff}
+.project-intro .intro-orange{color:#fa5116}
+.project-intro .intro-orange .hero-em svg{stroke:#fa5116}
+.project-intro .hero-description{color:#fff}
+.project-intro .hero-description strong{font-weight:650}
+.intro-principles>span:nth-of-type(odd){color:#fa5116}
 .project-intro .hero-description{max-width:440px;font-size:14px;line-height:1.85;margin-top:31px}
 .intro-principles{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:20px;font:500 7px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.5px;color:#ffffffb3}
 .intro-principles>i{font-style:normal;color:#ffffff60}
