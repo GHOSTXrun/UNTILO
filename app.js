@@ -20,6 +20,7 @@ let currentKit = null;
 let busy = false;
 let runSequence = 0;
 let posterObjectUrl = '';
+let pageObjectUrl = '';
 let lastOpener = null;
 let toastTimer;
 const objectUrls = new Set();
@@ -34,6 +35,7 @@ function toast(message) {
 function openStudio(event) {
   lastOpener = event.currentTarget;
   if (!studio.open) studio.showModal();
+  studio.scrollTop = 0;
   document.body.classList.add('modal-open');
   $('#project-name').focus();
 }
@@ -216,6 +218,13 @@ $$('.output-tabs [role=tab]').forEach(tab => {
 });
 function renderKit(kit) {
   $('#page-preview').srcdoc = kit.html;
+  if (pageObjectUrl) {URL.revokeObjectURL(pageObjectUrl); objectUrls.delete(pageObjectUrl);}
+  pageObjectUrl = URL.createObjectURL(new Blob([kit.html], {type: 'text/html;charset=utf-8'}));
+  objectUrls.add(pageObjectUrl);
+  $('#open-full-page').href = pageObjectUrl;
+  $('#edit-post').value = kit.post;
+  $('#edit-thread').value = kit.thread;
+  updatePostLength();
   $('#copy-preview').textContent = `LAUNCH POST\n\n${kit.post}\n\n\u2014\u2014\u2014\n\nINTRODUCTION THREAD\n\n${kit.thread}\n\nDraft copy: review before posting. X character limits depend on your account; edit or split longer drafts.`;
   if (posterObjectUrl) {URL.revokeObjectURL(posterObjectUrl); objectUrls.delete(posterObjectUrl);}
   posterObjectUrl = URL.createObjectURL(new Blob([kit.poster], {type: 'image/svg+xml'}));
@@ -280,11 +289,9 @@ $('#copy-post').addEventListener('click', async () => {
     await navigator.clipboard.writeText(currentKit.post);
     toast('Launch post copied. Review it before publishing.');
   } catch {
-    const range = document.createRange();
-    range.selectNodeContents($('#copy-preview'));
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    toast('Copy is unavailable here. The copy is selected for manual copying.');
+    $('#edit-post').focus();
+    $('#edit-post').select();
+    toast('The launch post is selected. Copy it manually.');
   }
 });
 
@@ -302,7 +309,7 @@ function makeZip(files) {
   const locals = [], centrals = [];
   let offset = 0;
   for (const file of files) {
-    const name = encoder.encode(file.name), data = encoder.encode((file.name.endsWith('.txt') ? '\uFEFF' : '') + file.content), crc = crc32(data);
+    const name = encoder.encode(file.name), data = file.data instanceof Uint8Array ? file.data : encoder.encode((file.name.endsWith('.txt') ? '\uFEFF' : '') + file.content), crc = crc32(data);
     const local = new Uint8Array(30 + name.length), lv = new DataView(local.buffer);
     lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x0800, true); lv.setUint16(12, 0x21, true);
     lv.setUint32(14, crc, true); lv.setUint32(18, data.length, true); lv.setUint32(22, data.length, true); lv.setUint16(26, name.length, true); local.set(name, 30);
@@ -315,25 +322,33 @@ function makeZip(files) {
   ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true); ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true);
   return new Blob([...locals, ...centrals, end], {type: 'application/zip'});
 }
-$('#download-kit').addEventListener('click', () => {
+$('#download-kit').addEventListener('click', async () => {
   if (!currentKit || busy) {toast('Wait for your updated kit to finish.'); return;}
   const kit = currentKit;
+  const button = $('#download-kit');
+  button.disabled = true;
+  const previousLabel = button.innerHTML;
+  button.textContent = 'Preparing your files...';
+  try {
+  const images = await rasterAssets(kit);
   const files = [
     {name: 'index.html', content: kit.html},
     {name: 'launch-copy.txt', content: `UNTILO LAUNCH KIT \u2014 RELEASE COPY\n\nPROJECT: ${kit.brief.name}\n\nLAUNCH POST\n${kit.post}\n\nINTRODUCTION THREAD\n${kit.thread}\n\nReview all copy and links before publishing. Edit or split longer posts for your X account limits.`},
     {name: 'launch-poster.svg', content: kit.poster},
     {name: 'social-cover.svg', content: kit.cover},
-    {name: 'READ-ME.txt', content: 'Created with UNTILO Launch Studio.\n\nOpen index.html in your browser to preview your landing page. Upload index.html to your preferred static hosting provider to publish it. Review wording and replace any unfinished links first.\n\nThe SVG files are editable vector images: launch-poster.svg (1080 x 1080) and social-cover.svg (1200 x 630). Convert them to PNG in a design tool before uploading to platforms that do not accept SVG.\n\nLaunch copy is in launch-copy.txt. These files were created from local templates, not live AI execution. No deployment or posting has been performed.\n'}
+    {name: 'launch-poster.png', data: new Uint8Array(await images.poster.arrayBuffer())},
+    {name: 'social-cover.png', data: new Uint8Array(await images.cover.arrayBuffer())},
+    {name: 'READ-ME.txt', content: 'Created with UNTILO Launch Studio.\n\n1. Open index.html in your browser to review your landing page.\n2. Upload index.html to a static hosting provider to publish it. Review wording and links first.\n3. Use launch-poster.png (1080 x 1080) and social-cover.png (1200 x 630) on your release channels. Editable SVG source files are also included.\n4. Your latest edited post and thread are in launch-copy.txt. Review post lengths and claims before publishing.\n\nYour files were prepared from browser-local layouts and copy structures. Live AI execution is not connected. No deployment or social posting has been performed.\n'}
   ];
-  const url = URL.createObjectURL(makeZip(files));
-  objectUrls.add(url);
-  const a = document.createElement('a');
-  a.href = url;
   const slug = kit.brief.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'project';
-  a.download = slug + '-launch-kit.zip';
-  document.body.append(a); a.click(); a.remove();
-  setTimeout(() => {URL.revokeObjectURL(url); objectUrls.delete(url);}, 30000);
+  saveDownload(makeZip(files), slug + '-launch-kit.zip');
   toast('Your launch kit is ready to download.');
+  } catch {
+    toast('The images could not be exported. Please try downloading again.');
+  } finally {
+    button.disabled = false;
+    button.innerHTML = previousLabel;
+  }
 });
 window.addEventListener('pagehide', () => {objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls.clear();});
 
@@ -463,3 +478,84 @@ walletButton?.addEventListener('click', async () => {
     walletButton.disabled = false;
   }
 });
+
+function updatePostLength() {
+  const length = Array.from($('#edit-post').value).length;
+  $('#post-length').textContent = length + ' characters';
+  $('#post-length').classList.toggle('over-length', length > 280);
+}
+$('#edit-post').addEventListener('input', () => {
+  if (currentKit) currentKit.post = $('#edit-post').value;
+  updatePostLength();
+});
+$('#edit-thread').addEventListener('input', () => {
+  if (currentKit) currentKit.thread = $('#edit-thread').value;
+});
+
+let saveBriefTimer;
+form.addEventListener('input', () => {
+  clearTimeout(saveBriefTimer);
+  $('#draft-status').textContent = 'Saving your brief...';
+  saveBriefTimer = setTimeout(() => {
+    try {
+      const {logo, ...brief} = readBrief();
+      localStorage.setItem(storageKey, JSON.stringify(brief));
+      $('#draft-status').textContent = 'Brief saved on this device.';
+    } catch {
+      $('#draft-status').textContent = 'Browser storage is unavailable. Keep this tab open to retain your brief.';
+    }
+  }, 350);
+});
+
+function saveDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  objectUrls.add(url);
+  const link = document.createElement('a');
+  link.href = url; link.download = filename;
+  document.body.append(link); link.click(); link.remove();
+  setTimeout(() => {URL.revokeObjectURL(url); objectUrls.delete(url);}, 30000);
+}
+function rasterizeSVG(svg, width, height) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml;charset=utf-8'}));
+    const image = new Image();
+    const timeout = setTimeout(() => {cleanup(); reject(new Error('Image export timed out'));}, 15000);
+    function cleanup() {clearTimeout(timeout); URL.revokeObjectURL(url);}
+    image.onerror = () => {cleanup(); reject(new Error('Image could not be loaded'));};
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Canvas unavailable');
+        context.drawImage(image, 0, 0, width, height);
+        canvas.toBlob(blob => {
+          cleanup();
+          if (blob) resolve(blob); else reject(new Error('PNG export unavailable'));
+        }, 'image/png');
+      } catch (error) {cleanup(); reject(error);}
+    };
+    image.src = url;
+  });
+}
+async function rasterAssets(kit) {
+  if (!kit.rasterPromise) {
+    kit.rasterPromise = Promise.all([rasterizeSVG(kit.poster, 1080, 1080), rasterizeSVG(kit.cover, 1200, 630)])
+      .then(([poster, cover]) => ({poster, cover}))
+      .catch(error => {kit.rasterPromise = null; throw error;});
+  }
+  return kit.rasterPromise;
+}
+for (const [id, key, filename] of [['download-poster', 'poster', 'launch-poster.png'], ['download-cover', 'cover', 'social-cover.png']]) {
+  $('#' + id).addEventListener('click', async () => {
+    if (!currentKit || busy) {toast('Finish creating your updated kit first.'); return;}
+    const button = $('#' + id), kit = currentKit;
+    button.disabled = true;
+    try {
+      const images = await rasterAssets(kit);
+      saveDownload(images[key], filename);
+      toast('PNG ready to download.');
+    } catch { toast('This image could not be exported. Please try again.'); }
+    finally {button.disabled = false;}
+  });
+}
