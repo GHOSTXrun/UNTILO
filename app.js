@@ -1,50 +1,335 @@
-const boot=document.querySelector('#boot');
-window.addEventListener('load',()=>setTimeout(()=>boot.classList.add('hide'),650));
+'use strict';
 
-const notice=document.querySelector('#notice');
-let noticeTimer;
-function notify(message){notice.textContent=message;notice.classList.add('show');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>notice.classList.remove('show'),4200)}
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+const studio = $('#studio');
+const form = $('#project-form');
+const storageKey = 'untilo-project-brief-v1';
+const palettes = {
+  electric: {accent: '#0648ff', soft: '#edf2ff', ink: '#131d35', label: 'Electric blue'},
+  midnight: {accent: '#7851e8', soft: '#f1edff', ink: '#211635', label: 'Midnight purple'},
+  forest: {accent: '#267957', soft: '#eef6e9', ink: '#142b22', label: 'Fresh green'}
+};
+let logoData = '';
+let logoReady = Promise.resolve();
+let logoSequence = 0;
+let currentKit = null;
+let busy = false;
+let runSequence = 0;
+let posterObjectUrl = '';
+let lastOpener = null;
+let toastTimer;
+const objectUrls = new Set();
 
-const TOKEN_CA='';
-const caValue=document.querySelector('#ca-value');
-const copyCA=document.querySelector('#copy-ca');
-if(/^0x[a-fA-F0-9]{40}$/.test(TOKEN_CA)){caValue.textContent=TOKEN_CA;copyCA.disabled=false;copyCA.textContent='COPY CA';copyCA.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(TOKEN_CA);copyCA.textContent='COPIED';notify('Official contract address copied.');setTimeout(()=>copyCA.textContent='COPY CA',1800)}catch{notify('Copy failed. Select the address manually.')}})}
+function toast(message) {
+  const node = $('#toast');
+  clearTimeout(toastTimer);
+  node.textContent = message;
+  node.classList.add('show');
+  toastTimer = setTimeout(() => node.classList.remove('show'), 3600);
+}
+function openStudio(event) {
+  lastOpener = event.currentTarget;
+  if (!studio.open) studio.showModal();
+  document.body.classList.add('modal-open');
+  $('#project-name').focus();
+}
+function cancelRun() {
+  runSequence++;
+  busy = false;
+  $('.form-submit').disabled = false;
+  $('#use-example').disabled = false;
+  form.removeAttribute('aria-busy');
+  if (!currentKit) {
+    $('#output-status').textContent = 'AWAITING BRIEF';
+    $$('.progress-list li').forEach(node => {node.className = ''; $('i', node).textContent = '○';});
+  } else {
+    $('#output-status').textContent = 'DEMO KIT READY';
+    $$('.progress-list li').forEach(node => {node.className = 'done'; $('i', node).textContent = '✓';});
+  }
+}
+$$('[data-open-studio]').forEach(button => button.addEventListener('click', openStudio));
+$('#close-studio').addEventListener('click', () => studio.close());
+studio.addEventListener('close', () => {
+  cancelRun();
+  document.body.classList.remove('modal-open');
+  lastOpener?.focus();
+});
+studio.addEventListener('click', event => {
+  const rect = studio.getBoundingClientRect();
+  if (event.target === studio && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) studio.close();
+});
+const menuButton = $('.mobile-menu');
+menuButton.addEventListener('click', () => {
+  const open = menuButton.getAttribute('aria-expanded') !== 'true';
+  menuButton.setAttribute('aria-expanded', String(open));
+  menuButton.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  $('#main-nav').classList.toggle('open', open);
+});
+$$('#main-nav a').forEach(link => link.addEventListener('click', () => {
+  menuButton.setAttribute('aria-expanded', 'false');
+  menuButton.setAttribute('aria-label', 'Open navigation');
+  $('#main-nav').classList.remove('open');
+}));
+$('#year').textContent = new Date().getFullYear();
 
-const chain={chainId:'0x1237',chainName:'Robinhood Chain',nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18},rpcUrls:['https://rpc.mainnet.chain.robinhood.com'],blockExplorerUrls:['https://robinhoodchain.blockscout.com']};
-const announcedProviders=[];
-const boundProviders=new WeakSet();
-window.addEventListener('eip6963:announceProvider',event=>{if(!announcedProviders.some(item=>item.info.uuid===event.detail.info.uuid))announcedProviders.push(event.detail)});
-window.dispatchEvent(new Event('eip6963:requestProvider'));
-function getProvider(){const robinhood=announcedProviders.find(item=>(item.info.rdns||'').toLowerCase().includes('robinhood'));return robinhood&&robinhood.provider||announcedProviders[0]&&announcedProviders[0].provider||window.ethereum||null}
-const wallet=document.querySelector('#wallet');
-const walletText=wallet.querySelector('span');
-let connectedAddress='';
-function shortAddress(address){return address.slice(0,6)+'...'+address.slice(-4)}
-function syncWallet(accounts){connectedAddress=accounts&&accounts[0]||'';walletText.textContent=connectedAddress?shortAddress(connectedAddress):'CONNECT WALLET';wallet.classList.toggle('connected',Boolean(connectedAddress));wallet.title=connectedAddress||'Connect an EVM wallet'}
-function syncChain(chainId){wallet.classList.toggle('wrong-network',Boolean(connectedAddress)&&chainId.toLowerCase()!==chain.chainId)}
-function bindProvider(provider){if(!provider||boundProviders.has(provider)||!provider.on)return;boundProviders.add(provider);provider.on('accountsChanged',syncWallet);provider.on('chainChanged',syncChain);provider.on('disconnect',()=>syncWallet([]))}
-async function addNetwork(){const provider=getProvider();if(!provider){notify('No EVM wallet detected. Open this page in Robinhood Wallet or install a browser wallet.');return false}bindProvider(provider);try{await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:chain.chainId}]});syncChain(chain.chainId);notify('Robinhood Chain is active.');return true}catch(error){if(error.code===4902){try{await provider.request({method:'wallet_addEthereumChain',params:[chain]});syncChain(chain.chainId);notify('Robinhood Chain was added to your wallet.');return true}catch(addError){notify(addError.message||'The network request was declined.');return false}}notify(error.message||'Unable to switch networks.');return false}}
-async function connect(){const provider=getProvider();if(!provider){notify('No EVM wallet detected. Open this page in Robinhood Wallet or install MetaMask.');return}bindProvider(provider);walletText.textContent='CONNECTING...';try{const accounts=await provider.request({method:'eth_requestAccounts'});syncWallet(accounts);if(accounts.length)await addNetwork()}catch(error){syncWallet([]);notify(error.message||'Wallet connection was cancelled.')}}
-wallet.addEventListener('click',connect);
-document.querySelector('#add-network').addEventListener('click',addNetwork);
-setTimeout(()=>{const provider=getProvider();if(provider){bindProvider(provider);provider.request({method:'eth_accounts'}).then(syncWallet).catch(()=>{});provider.request({method:'eth_chainId'}).then(syncChain).catch(()=>{})}},100);
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, char => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
+}
+function safeURL(value) {
+  if (!value) return '';
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password ? url.href : '';
+  } catch { return ''; }
+}
+function readBrief() {
+  return {
+    name: $('#project-name').value.trim(),
+    description: $('#project-description').value.trim(),
+    audience: $('#project-audience').value.trim(),
+    style: $('#project-style').value,
+    url: safeURL($('#project-url').value.trim()),
+    logo: logoData
+  };
+}
+try {
+  const brief = JSON.parse(localStorage.getItem(storageKey) || 'null');
+  if (brief && typeof brief === 'object') {
+    for (const [key, id, limit] of [['name', 'project-name', 36], ['description', 'project-description', 500], ['audience', 'project-audience', 90]]) {
+      if (typeof brief[key] === 'string') $('#' + id).value = brief[key].slice(0, limit);
+    }
+    if (palettes[brief.style]) $('#project-style').value = brief.style;
+    $('#project-url').value = safeURL(brief.url);
+  }
+} catch { /* The demo works when browser storage is unavailable. */ }
 
-const agents=[...document.querySelectorAll('.agent')];
-const toast=document.querySelector('#toast');
-function easternTime(){return new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date())+' ET'}
-document.querySelectorAll('.log time,.toast b').forEach(time=>time.textContent=time.textContent+' ET');
-document.querySelector('.console-bar span:last-child').textContent+=' / TIME: ET';
-const notes={Manager:'MANAGER_01 is routing the next dependency',Brand:'BRAND_07 delivered identity system',Web:'WEB_12 submitted interactive preview',Copy:'COPY_03 is refining launch language',Human:'REVIEWER accepted visual consistency task',Audit:'AUDIT_09 verified 4 of 7 deliverables'};
-agents.forEach(card=>card.addEventListener('click',()=>{agents.forEach(a=>a.classList.remove('active'));card.classList.add('active');toast.innerHTML='<b>'+easternTime()+'</b> '+notes[card.dataset.a]}));
-const events=[['WEB_12 submitted preview',68],['REVIEWER accepted assignment',71],['AUDIT_09 verified artifact',76],['COPY_03 released unused budget',73],['MANAGER_01 opened final review',79]];
-let eventIndex=0;
-setInterval(()=>{const item=events[eventIndex++%events.length];toast.style.opacity=0;setTimeout(()=>{toast.innerHTML='<b>'+easternTime()+'</b> '+item[0];toast.style.opacity=1},220);document.querySelector('#percent').textContent=item[1]+'%';document.querySelector('#meter').style.width=item[1]+'%'},4200);
+$('#project-logo').addEventListener('change', () => {
+  const sequence = ++logoSequence;
+  logoData = '';
+  const input = $('#project-logo');
+  const file = input.files[0];
+  const status = $('#file-status');
+  if (!file) {status.textContent = 'Your logo stays in this browser tab.'; logoReady = Promise.resolve(); return;}
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 3 * 1024 * 1024) {
+    input.value = '';
+    status.textContent = 'Choose a PNG, JPG, or WebP image under 3 MB.';
+    toast('Please use a PNG, JPG, or WebP image under 3 MB.');
+    logoReady = Promise.resolve();
+    return;
+  }
+  status.textContent = 'Checking your logo…';
+  logoReady = new Promise(resolve => {
+    const reader = new FileReader();
+    const fail = () => {
+      if (sequence === logoSequence) {input.value = ''; status.textContent = 'This image could not be read. Please choose another.';}
+      resolve();
+    };
+    reader.onerror = fail;
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = fail;
+      image.onload = () => {
+        if (sequence === logoSequence) {
+          if (image.naturalWidth > 8192 || image.naturalHeight > 8192) {fail(); return;}
+          logoData = String(reader.result);
+          status.textContent = file.name + ' · Ready. Stays on your device.';
+        }
+        resolve();
+      };
+      image.src = String(reader.result);
+    };
+    reader.readAsDataURL(file);
+  });
+});
+$('#project-url').addEventListener('input', () => $('#project-url').setCustomValidity(''));
+$('#use-example').addEventListener('click', () => {
+  $('#project-name').value = 'UNTILO';
+  $('#project-description').value = 'A focused AI team that brings your project to life with a landing page, launch copy, and release visuals.';
+  $('#project-audience').value = 'independent builders and new project teams';
+  $('#project-style').value = 'electric';
+  $('#project-url').value = 'https://ghostxrun.github.io/UNTILO/';
+  $('#project-url').setCustomValidity('');
+  form.requestSubmit();
+});
 
-document.querySelector('#inspect').addEventListener('click',()=>document.querySelector('#protocol').scrollIntoView({behavior:'smooth'}));
-const form=document.querySelector('#form');
-const dialog=document.querySelector('#dialog');
-form.addEventListener('submit',event=>{event.preventDefault();document.querySelector('#dialog-text').textContent=document.querySelector('#outcome').value.trim();document.querySelector('#dialog-budget').textContent=document.querySelector('#budget').value+' USDC maximum';document.querySelector('#dialog-deadline').textContent=document.querySelector('#deadline').value;dialog.showModal()});
-document.querySelector('#close').addEventListener('click',()=>dialog.close());
-document.querySelector('#dialog-wallet').addEventListener('click',connect);
-dialog.addEventListener('click',event=>{const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close()});
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dialog.open)dialog.close()});
+function makeLanding(brief, palette) {
+  const n = escapeHTML(brief.name), d = escapeHTML(brief.description), a = escapeHTML(brief.audience);
+  const mark = brief.logo ? `<img src="${escapeHTML(brief.logo)}" alt="${n} logo">` : `<span class="mark">${escapeHTML(Array.from(brief.name)[0].toUpperCase())}</span>`;
+  const destination = brief.url ? escapeHTML(brief.url) : '#about';
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${d}"><title>${n} — Meet what’s next.</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;font-family:Arial,sans-serif;color:${palette.ink}}a{color:inherit;text-decoration:none}header,main,footer{max-width:1100px;margin:auto}header{padding:25px 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8ebf1;font-size:12px}.brand{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:700;letter-spacing:-.6px}.brand img,.mark{width:32px;height:32px;object-fit:cover;border-radius:8px}.mark{display:grid;place-items:center;background:${palette.accent};color:white}header nav{display:flex;gap:22px}.hero{padding:85px 6% 70px;position:relative;overflow:hidden}.eyebrow{font-size:9px;letter-spacing:2px;color:${palette.accent};font-weight:700}h1{font-size:clamp(43px,8vw,94px);line-height:1.02;letter-spacing:-.06em;max-width:850px;margin:28px 0;overflow-wrap:anywhere}h1 span{color:${palette.accent}}.intro{max-width:590px;color:#687182;line-height:1.8;font-size:16px;overflow-wrap:anywhere}.cta{display:inline-block;margin-top:25px;background:${palette.accent};color:white;padding:16px 22px;border-radius:6px;font-size:12px}.audience{padding:40px 6%;background:${palette.soft};border-top:1px solid #e8ebf1}.audience h2{font-size:28px;line-height:1.3;letter-spacing:-1px;max-width:700px;overflow-wrap:anywhere}.audience p{font-size:14px;line-height:1.7;color:#687182;max-width:650px;overflow-wrap:anywhere}.values{display:grid;grid-template-columns:repeat(3,1fr);padding:38px 6%;gap:30px}.values span{font-size:10px;color:${palette.accent}}.values h3{font-size:16px;letter-spacing:-.4px}.values p{font-size:12px;line-height:1.7;color:#687182}footer{padding:25px 6%;border-top:1px solid #e8ebf1;display:flex;gap:20px;justify-content:space-between;font-size:9px;color:#8e98aa}.review{padding:12px 6%;font-size:9px;color:#8e98aa;border-top:1px solid #e8ebf1;margin:0 auto;max-width:1100px}@media(max-width:560px){header{padding:18px 6%}header nav{gap:13px;font-size:10px}.brand{font-size:15px}.hero{padding:50px 6%}.intro{font-size:14px}.values{grid-template-columns:1fr;gap:15px}.audience h2{font-size:24px}footer{flex-wrap:wrap}.eyebrow{font-size:8px}}
+</style></head><body><header><a class="brand" href="#">${mark}${n}</a><nav><a href="#about">About</a><a href="${destination}">${brief.url ? 'Explore' : 'Learn more'} ↗</a></nav></header><main><section class="hero"><p class="eyebrow">A NEW IDEA. A NEW CHAPTER.</p><h1>Meet <span>${n}.</span><br>Meet what’s next.</h1><p class="intro">${d}</p><a class="cta" href="${destination}">${brief.url ? 'Explore ' + n : 'Discover the idea'} ↗</a></section><section class="audience" id="about"><p class="eyebrow">BUILT WITH YOU IN MIND</p><h2>A fresh starting point for ${a}.</h2><p>${d}</p></section><section class="values"><article><span>01 / THE IDEA</span><h3>A clear direction.</h3><p>Explore the project, understand the vision, and see where it’s headed.</p></article><article><span>02 / THE PEOPLE</span><h3>Made for your next chapter.</h3><p>A project shaped around the people it hopes to serve.</p></article><article><span>03 / THE START</span><h3>Follow what comes next.</h3><p>This is the beginning. Visit the project for the latest updates.</p></article></section></main><footer><strong>${n}</strong><span>A new chapter starts here.</span><span>Created with UNTILO</span></footer><p class="review">Template draft · Review copy and links before publishing.</p></body></html>`;
+}
+function wrapWords(value, maxChars, maxLines) {
+  const words = value.trim().split(/\s+/);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    if ((line + ' ' + word).trim().length <= maxChars) { line = (line + ' ' + word).trim(); }
+    else { if (line) lines.push(line); line = word; }
+  }
+  if (line) lines.push(line);
+  const result = lines.slice(0, maxLines).map(text => text.length > maxChars ? text.slice(0, maxChars - 1) + '…' : text);
+  if (lines.length > maxLines) result[maxLines - 1] = result[maxLines - 1].slice(0, maxChars - 1) + '…';
+  return result;
+}
+function makeVisual(brief, palette, cover = false) {
+  const w = cover ? 1200 : 1080, h = cover ? 630 : 1080;
+  const lines = wrapWords(brief.name, cover ? 22 : 18, 2);
+  const titleSize = cover ? 76 : 100;
+  const titleY = cover ? 291 : 535;
+  const mark = brief.logo ? `<image href="${escapeHTML(brief.logo)}" x="65" y="56" width="65" height="65" preserveAspectRatio="xMidYMid meet"/>` : `<rect x="65" y="56" width="65" height="65" rx="16" fill="white" fill-opacity=".15"/><text x="98" y="102" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="37" font-weight="700">${escapeHTML(Array.from(brief.name)[0].toUpperCase())}</text>`;
+  const tagline = wrapWords(brief.description, cover ? 88 : 58, 2);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${palette.accent}"/><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" opacity=".15"/></pattern></defs><rect width="${w}" height="${h}" fill="url(#grid)"/><circle cx="${w - 120}" cy="${cover ? 190 : 240}" r="${cover ? 170 : 240}" fill="none" stroke="white" stroke-opacity=".15" stroke-width="45"/><path d="M${w - 240} ${cover ? 310 : 360}l200 -200m-160 0h160v160" stroke="white" stroke-opacity=".85" stroke-width="23" fill="none"/>${mark}<text x="65" y="${cover ? 192 : 425}" fill="white" opacity=".7" font-family="Arial,sans-serif" font-size="15" letter-spacing="4">YOUR NEXT CHAPTER STARTS HERE.</text><text fill="white" font-family="Arial,sans-serif" font-size="${titleSize}" font-weight="700" letter-spacing="-4">${lines.map((line, index) => `<tspan x="60" y="${titleY + index * titleSize * 1.08}">${escapeHTML(line)}</tspan>`).join('')}</text><text fill="white" opacity=".8" font-family="Arial,sans-serif" font-size="${cover ? 19 : 23}">${tagline.map((line, index) => `<tspan x="65" y="${titleY + lines.length * titleSize * 1.08 + 20 + index * 34}">${escapeHTML(line)}</tspan>`).join('')}</text><path d="M65 ${h - 100}H${w - 65}" stroke="white" stroke-opacity=".3"/><text x="65" y="${h - 58}" fill="white" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">MEET WHAT’S NEXT.</text><text x="${w - 65}" y="${h - 58}" text-anchor="end" fill="white" opacity=".65" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">CREATED WITH UNTILO ↗</text></svg>`;
+}
+function makeKit(brief) {
+  const palette = palettes[brief.style] || palettes.electric;
+  const shortDescription = brief.description.length > 150 ? brief.description.slice(0, 147).trim() + '…' : brief.description;
+  const post = `Meet ${brief.name}.\n\n${shortDescription}\n\n${brief.url ? 'Explore: ' + brief.url : 'Follow along for what comes next.'}`;
+  const thread = `1/ Introducing ${brief.name}.\n${brief.description}\n\n2/ Built for ${brief.audience}.\nA new idea starts with understanding who it’s for. That’s where our story begins.\n\n3/ This is our starting point.\n${brief.url ? 'Take a look: ' + brief.url : 'Stay close for project updates and the next chapter.'}`;
+  return {brief, html: makeLanding(brief, palette), post, thread, poster: makeVisual(brief, palette), cover: makeVisual(brief, palette, true)};
+}
+function setTab(name, focus = false) {
+  $$('.output-tabs [role=tab]').forEach(tab => {
+    const selected = tab.dataset.tab === name;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    $('#panel-' + tab.dataset.tab).hidden = !selected;
+    if (selected && focus) tab.focus();
+  });
+}
+$$('.output-tabs [role=tab]').forEach(tab => {
+  tab.addEventListener('click', () => setTab(tab.dataset.tab));
+  tab.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const tabs = $$('.output-tabs [role=tab]');
+    let index = tabs.indexOf(tab);
+    index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    setTab(tabs[index].dataset.tab, true);
+  });
+});
+function renderKit(kit) {
+  $('#page-preview').srcdoc = kit.html;
+  $('#copy-preview').textContent = `LAUNCH POST\n\n${kit.post}\n\n———\n\nINTRODUCTION THREAD\n\n${kit.thread}\n\nDraft copy: review before posting. X character limits depend on your account; edit or split longer drafts.`;
+  if (posterObjectUrl) {URL.revokeObjectURL(posterObjectUrl); objectUrls.delete(posterObjectUrl);}
+  posterObjectUrl = URL.createObjectURL(new Blob([kit.poster], {type: 'image/svg+xml'}));
+  objectUrls.add(posterObjectUrl);
+  $('#poster-preview').src = posterObjectUrl;
+  $('#poster-preview').alt = kit.brief.name + ' launch poster';
+  $('#output-empty').hidden = true;
+  $('#output-results').hidden = false;
+  $('#output-status').textContent = 'DEMO KIT READY';
+  setTab('page');
+}
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (busy) return;
+  for (const id of ['project-name', 'project-description', 'project-audience']) {
+    const input = $('#' + id);
+    input.value = input.value.trim();
+    if (!input.value) {input.reportValidity(); return;}
+  }
+  const urlInput = $('#project-url');
+  if (urlInput.value.trim() && !safeURL(urlInput.value.trim())) {
+    urlInput.setCustomValidity('Please use a valid HTTPS link without embedded credentials.');
+    urlInput.reportValidity();
+    return;
+  }
+  busy = true;
+  const run = ++runSequence;
+  $('.form-submit').disabled = true;
+  $('#use-example').disabled = true;
+  form.setAttribute('aria-busy', 'true');
+  $('#studio-announcement').textContent = 'Preparing your template demo. No live AI agents are running.';
+  try {
+    await logoReady;
+    if (run !== runSequence) return;
+    const brief = readBrief();
+    try { const {logo, ...saved} = brief; localStorage.setItem(storageKey, JSON.stringify(saved)); } catch { /* Optional browser storage. */ }
+    $('#output-status').textContent = 'BUILDING DEMO';
+    const steps = $$('.progress-list li');
+    steps.forEach(node => {node.className = ''; $('i', node).textContent = '○';});
+    for (const step of steps) {
+      step.classList.add('active');
+      await new Promise(resolve => setTimeout(resolve, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 320));
+      if (run !== runSequence) return;
+      step.classList.remove('active'); step.classList.add('done'); $('i', step).textContent = '✓';
+    }
+    currentKit = makeKit(brief);
+    renderKit(currentKit);
+    $('#studio-announcement').textContent = 'Demo kit ready. Preview the page, copy your post, or download all four assets.';
+    if (window.matchMedia('(max-width:640px)').matches) $('.studio-output').scrollIntoView({block: 'start', behavior: 'smooth'});
+  } catch {
+    $('#studio-announcement').textContent = 'The preview could not be prepared. Please try again.';
+    $('#output-status').textContent = currentKit ? 'PREVIOUS KIT READY' : 'TRY AGAIN';
+  } finally {
+    if (run === runSequence) {
+      busy = false; $('.form-submit').disabled = false; $('#use-example').disabled = false; form.removeAttribute('aria-busy');
+    }
+  }
+});
+$('#copy-post').addEventListener('click', async () => {
+  if (!currentKit) return;
+  try {
+    await navigator.clipboard.writeText(currentKit.post);
+    toast('Launch post copied. Review it before publishing.');
+  } catch {
+    const range = document.createRange();
+    range.selectNodeContents($('#copy-preview'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    toast('Copy is unavailable here. The copy is selected for manual copying.');
+  }
+});
+
+// Small, uncompressed ZIP writer: keeps the demo buildless and downloads entirely local.
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+function makeZip(files) {
+  const encoder = new TextEncoder();
+  const locals = [], centrals = [];
+  let offset = 0;
+  for (const file of files) {
+    const name = encoder.encode(file.name), data = encoder.encode(file.content), crc = crc32(data);
+    const local = new Uint8Array(30 + name.length), lv = new DataView(local.buffer);
+    lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x0800, true); lv.setUint16(12, 0x21, true);
+    lv.setUint32(14, crc, true); lv.setUint32(18, data.length, true); lv.setUint32(22, data.length, true); lv.setUint16(26, name.length, true); local.set(name, 30);
+    const central = new Uint8Array(46 + name.length), cv = new DataView(central.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0x0800, true); cv.setUint16(14, 0x21, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true); cv.setUint16(28, name.length, true); cv.setUint32(42, offset, true); central.set(name, 46);
+    locals.push(local, data); centrals.push(central); offset += local.length + data.length;
+  }
+  const centralSize = centrals.reduce((sum, entry) => sum + entry.length, 0), end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true); ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true);
+  return new Blob([...locals, ...centrals, end], {type: 'application/zip'});
+}
+$('#download-kit').addEventListener('click', () => {
+  if (!currentKit || busy) {toast('Wait for your updated kit to finish.'); return;}
+  const kit = currentKit;
+  const files = [
+    {name: 'index.html', content: kit.html},
+    {name: 'launch-copy.txt', content: `UNTILO LAUNCH KIT — TEMPLATE DRAFT\n\nPROJECT: ${kit.brief.name}\n\nLAUNCH POST\n${kit.post}\n\nINTRODUCTION THREAD\n${kit.thread}\n\nReview all copy and links before publishing. Edit or split longer posts for your X account limits.`},
+    {name: 'launch-poster.svg', content: kit.poster},
+    {name: 'social-cover.svg', content: kit.cover},
+    {name: 'READ-ME.txt', content: 'Created with UNTILO frontend demo.\n\nOpen index.html in your browser to preview your landing page. Upload index.html to your preferred static hosting provider to publish it. Review wording and replace any unfinished links first.\n\nThe SVG files are editable vector images: launch-poster.svg (1080 x 1080) and social-cover.svg (1200 x 630). Convert them to PNG in a design tool before uploading to platforms that do not accept SVG.\n\nLaunch copy is in launch-copy.txt. These files were created from local templates, not live AI execution. No deployment or posting has been performed.\n'}
+  ];
+  const url = URL.createObjectURL(makeZip(files));
+  objectUrls.add(url);
+  const a = document.createElement('a');
+  a.href = url;
+  const slug = kit.brief.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'project';
+  a.download = slug + '-launch-kit.zip';
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => {URL.revokeObjectURL(url); objectUrls.delete(url);}, 30000);
+  toast('Your demo launch kit is ready to download.');
+});
+window.addEventListener('pagehide', () => {objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls.clear();});
