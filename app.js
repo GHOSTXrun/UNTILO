@@ -1,7 +1,7 @@
 'use strict';
 
 // Set the official Solana token address here after the launch is announced.
-const UNTILO_CONTRACT_ADDRESS = '';
+const UNTILO_CONTRACT_ADDRESS = 'G2PCm9s2chYWr6PTZBxJFYdRfAwTtv1jr6rUe2japump';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
