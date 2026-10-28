@@ -2,7 +2,7 @@
 
 // Explicit wallet selection; never request a transaction or signature.
 const walletCatalog = {
-  backpack: {name: 'Backpack', website: 'https://backpack.app/', browse: 'https://backpack.app/ul/v1/browse/'},
+  robinhood: {name: 'Robinhood Wallet', website: 'https://robinhood.com/web3-wallet/'} ,
   phantom: {name: 'Phantom', website: 'https://phantom.com/', browse: 'https://phantom.com/ul/browse/'}
 };
 const walletDialog = document.querySelector('#wallet-dialog');
@@ -11,15 +11,28 @@ let walletSession = null;
 let walletPending = false;
 let walletListenerCleanups = [];
 
-function getSolanaProvider(id) {
+const discoveredWallets = new Map();
+window.addEventListener('eip6963:announceProvider', event => {
+  const detail = event.detail;
+  if (detail?.info?.rdns && typeof detail.provider?.request === 'function') {
+    discoveredWallets.set(detail.info.rdns, detail.provider);
+    if (walletDialog.open) renderWallet();
+  }
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+function getEthereumProvider(id) {
+  const announced = [...discoveredWallets].find(([rdns]) =>
+    id === 'phantom' ? /(^|\\.)phantom\\.app$/.test(rdns) : /(^|\\.)robinhood\\.com$/.test(rdns));
+  const injected = window.ethereum?.providers || [window.ethereum];
   const candidates = id === 'phantom'
-    ? [window.phantom?.solana, window.solana?.isPhantom ? window.solana : null]
-    : [window.backpack?.solana, window.backpack, window.solana?.isBackpack ? window.solana : null];
-  return candidates.find(provider => provider && typeof provider.connect === 'function') || null;
+    ? [announced?.[1], window.phantom?.ethereum, ...injected.filter(p => p?.isPhantom)]
+    : [announced?.[1], window.robinhood?.ethereum, ...injected.filter(p => p?.isRobinhood)];
+  // Robinhood's in-app browser exposes its selected EIP-1193 provider.
+  if (id === 'robinhood' && /Robinhood/i.test(navigator.userAgent)) candidates.push(window.ethereum);
+  return candidates.find(provider => provider && typeof provider.request === 'function') || null;
 }
 function validWalletAddress(value) {
-  const address = value ? String(value) : '';
-  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address) ? address : '';
+  return typeof value === 'string' && /^0x[0-9a-fA-F]{40}$/.test(value) ? value : '';
 }
 function clearWalletListeners() {
   for (const cleanup of walletListenerCleanups) {try {cleanup();} catch {}}
@@ -28,20 +41,20 @@ function clearWalletListeners() {
 function renderWallet() {
   walletTrigger.classList.toggle('is-connected', Boolean(walletSession));
   walletTrigger.textContent = walletSession ? walletSession.address.slice(0, 4) + '...' + walletSession.address.slice(-4) : 'CONNECT WALLET';
-  walletTrigger.title = walletSession ? 'Open ' + walletSession.name + ' wallet details' : 'Connect Backpack or Phantom';
+  walletTrigger.title = walletSession ? 'Open ' + walletSession.name + ' wallet details' : 'Connect Robinhood Wallet or Phantom';
   document.querySelector('#wallet-account').hidden = !walletSession;
   document.querySelector('#wallet-choices').hidden = Boolean(walletSession);
   if (walletSession) {
     document.querySelector('#wallet-account-name').textContent = walletSession.name.toUpperCase();
     document.querySelector('#wallet-full-address').textContent = walletSession.address;
-    document.querySelector('#wallet-explorer').href = 'https://solscan.io/account/' + encodeURIComponent(walletSession.address);
+    document.querySelector('#wallet-explorer').href = 'https://etherscan.io/address/' + encodeURIComponent(walletSession.address);
     document.querySelector('#wallet-help').hidden = true;
   }
   document.querySelectorAll('[data-wallet]').forEach(button => {
-    const installed = Boolean(getSolanaProvider(button.dataset.wallet));
+    const installed = Boolean(getEthereumProvider(button.dataset.wallet));
     button.classList.toggle('installed', installed);
     button.disabled = walletPending;
-    document.querySelector('[data-wallet-status=' + button.dataset.wallet + ']').textContent = installed ? 'Detected - connect on Solana' : 'Not detected on this browser';
+    document.querySelector('[data-wallet-status=' + button.dataset.wallet + ']').textContent = installed ? 'Detected - connect on Ethereum' : 'Not detected on this browser';
   });
 }
 function setWalletStatus(message) {document.querySelector('#wallet-status').textContent = message;}
@@ -53,7 +66,7 @@ function resetWalletSession(message) {
 }
 function openWalletDialog() {
   renderWallet();
-  if (!walletPending) setWalletStatus(walletSession ? 'Your Solana wallet is connected.' : 'Select a wallet to continue.');
+  if (!walletPending) setWalletStatus(walletSession ? 'Your Ethereum wallet is connected.' : 'Select a wallet to continue.');
   if (!walletDialog.open) walletDialog.showModal();
   document.body.classList.add('modal-open');
 }
@@ -73,13 +86,14 @@ function showWalletHelp(id) {
   const wallet = walletCatalog[id];
   document.querySelector('#wallet-help').hidden = false;
   document.querySelector('#wallet-help-title').textContent = 'Connect with ' + wallet.name;
-  document.querySelector('#wallet-help-text').textContent = 'Install the browser extension, then refresh this page. On mobile, open UNTILO in the wallet browser and connect there.';
+  document.querySelector('#wallet-help-text').textContent = 'Open this site in the wallet web3 browser with Ethereum selected, or install a compatible extension and refresh.';
   const install = document.querySelector('#wallet-install');
   install.href = wallet.website; install.textContent = 'Get ' + wallet.name + ' \u2197';
   const open = document.querySelector('#wallet-open-mobile');
   const currentPage = new URL(window.location.href);
   currentPage.hash = '';
-  open.href = wallet.browse + encodeURIComponent(currentPage.href) + '?ref=' + encodeURIComponent(window.location.origin);
+  open.hidden = !wallet.browse;
+  if (wallet.browse) open.href = wallet.browse + encodeURIComponent(currentPage.href) + '?ref=' + encodeURIComponent(window.location.origin);
   open.textContent = 'Open in ' + wallet.name + ' \u2197';
   setWalletStatus(wallet.name + ' was not detected. Choose an option above to continue.');
 }
@@ -93,7 +107,7 @@ function listenToWallet(provider, event, handler) {
 }
 async function connectSelectedWallet(id) {
   if (walletPending || walletSession || !walletCatalog[id]) return;
-  const provider = getSolanaProvider(id);
+  const provider = getEthereumProvider(id);
   if (!provider) {showWalletHelp(id); return;}
   const name = walletCatalog[id].name;
   walletPending = true;
@@ -101,14 +115,16 @@ async function connectSelectedWallet(id) {
   renderWallet();
   setWalletStatus('Approve the connection in ' + name + '.');
   try {
-    const response = await provider.connect();
-    const address = validWalletAddress(response?.publicKey || provider.publicKey);
-    if (!address) throw new Error('No valid Solana address returned');
+    const response = await provider.request({method: 'eth_requestAccounts'});
+    const chainId = await provider.request({method: 'eth_chainId'});
+    if (String(chainId).toLowerCase() !== '0x1') {setWalletStatus('Select Ethereum Mainnet in ' + name + ' and try again.'); return;}
+    const address = validWalletAddress(response?.[0]);
+    if (!address) throw new Error('No valid Ethereum address returned');
     clearWalletListeners();
     walletSession = {id, name, provider, address};
-    listenToWallet(provider, 'accountChanged', value => {
+    listenToWallet(provider, 'accountsChanged', value => {
       if (walletSession?.provider !== provider) return;
-      const address = validWalletAddress(value);
+      const address = validWalletAddress(value?.[0]);
       if (!address) {resetWalletSession('Wallet disconnected. Select a wallet to reconnect.'); return;}
       walletSession.address = address;
       renderWallet(); setWalletStatus('Connected account updated.');
@@ -116,8 +132,11 @@ async function connectSelectedWallet(id) {
     listenToWallet(provider, 'disconnect', () => {
       if (walletSession?.provider === provider) resetWalletSession('Wallet disconnected. Select a wallet to reconnect.');
     });
+    listenToWallet(provider, 'chainChanged', chainId => {
+      if (walletSession?.provider === provider && String(chainId).toLowerCase() !== '0x1') resetWalletSession('Network changed. Select Ethereum Mainnet and reconnect.');
+    });
     renderWallet();
-    setWalletStatus(name + ' connected on Solana.');
+    setWalletStatus(name + ' connected on Ethereum.');
     toast(name + ' connected.');
     if (walletDialog.open) walletDialog.close();
   } catch (error) {
@@ -136,7 +155,7 @@ document.querySelector('#wallet-disconnect').addEventListener('click', async () 
   walletPending = true;
   const provider = walletSession.provider;
   try {
-    if (typeof provider.disconnect === 'function') await provider.disconnect();
+    // Clear this site's session; wallet permissions remain managed inside the wallet.
     resetWalletSession('Wallet disconnected. Select a wallet to reconnect.');
     toast('Wallet disconnected.');
   } catch {setWalletStatus('Unable to disconnect. Please try again or disconnect in your wallet.');}

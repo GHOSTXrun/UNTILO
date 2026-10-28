@@ -1,6 +1,6 @@
 'use strict';
 
-// Set the official Solana token address here after the launch is announced.
+// Set the official Ethereum token address here after the launch is announced.
 const UNTILO_CONTRACT_ADDRESS = '';
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -352,7 +352,7 @@ $('#download-kit').addEventListener('click', async () => {
 });
 window.addEventListener('pagehide', () => {objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls.clear();});
 
-const hasOfficialContract = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(UNTILO_CONTRACT_ADDRESS);
+const hasOfficialContract = /^0x[0-9a-fA-F]{40}$/.test(UNTILO_CONTRACT_ADDRESS);
 const contractCopyButton = $('#copy-contract');
 if (hasOfficialContract && contractCopyButton) {
   $('#official-ca').textContent = UNTILO_CONTRACT_ADDRESS;
@@ -361,7 +361,7 @@ if (hasOfficialContract && contractCopyButton) {
   $('.ca-row strong').textContent = UNTILO_CONTRACT_ADDRESS;
   $('.ca-row strong').style.overflowWrap = 'anywhere';
   $('.ca-row strong').style.fontSize = '15px';
-  $('.ca-row > span').textContent = 'SOLANA';
+  $('.ca-row > span').textContent = 'ETHEREUM (ETH)';
   $('.token-panel > p').textContent = 'Verify the official contract address above before interacting.';
   contractCopyButton.disabled = false;
   contractCopyButton.replaceChildren(document.createTextNode('COPY CA '));
