@@ -1,18 +1,33 @@
 @charset "UTF-8";
-/* Match the black introduction text across numbered chapters 02 through 06. */
+/* Bright type on blue chapter surfaces. */
+#concept,
+#concept .concept-heading > p,
+#concept .concept-principles p,
+#how-it-works .section-heading-row > p,
+#how-it-works .workflow-bottom > p,
+#deliverables .section-intro p,
+.handoff-section > div:first-child > p:not(.eyebrow),
+#launch .launch-inner > div:first-child > p:not(.eyebrow),
+#faq .faq-list p {
+  color: #fff;
+}
+
+#concept > .eyebrow,
+#concept h2,
+#concept .concept-statement > span,
+#concept .concept-statement i,
+#concept .concept-statement b,
+#concept .concept-principles article > span,
+#concept .concept-principles h3,
 #how-it-works > .section-wrap > .eyebrow,
-#how-it-works .section-heading-row,
-#how-it-works .section-heading-row *,
-#how-it-works .workflow-bottom *,
-#deliverables .section-intro,
-#deliverables .section-intro *,
-#deliverables .kit-card-footer *,
-.handoff-section > div:first-child,
-.handoff-section > div:first-child *,
-#launch .launch-inner > div:first-child,
-#launch .launch-inner > div:first-child *,
-#faq,
-#faq * {color:#111111}
+#how-it-works .section-heading-row h2,
+#how-it-works .workflow-bottom .text-link,
+#deliverables .section-intro :is(.eyebrow,h2),
+.handoff-section > div:first-child :is(.eyebrow,h2),
+#launch .launch-inner > div:first-child :is(.eyebrow,h2,h2 span),
+#faq :is(.eyebrow,h2,.faq-list summary) {
+  color: #ffda26;
+}
 
 #how-it-works .mission-body p,
 #how-it-works .mission-body dt,

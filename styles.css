@@ -225,7 +225,6 @@ body .notes .button-blue{background:#fff;color:#0636e8}
 @media(max-width:640px){.chapter-divider-inner{padding:17px 23px;min-height:95px;grid-template-columns:1fr 1fr;gap:12px 10px}.chapter-id{font-size:7px;letter-spacing:1px;padding:0}.chapter-detail{grid-column:2;grid-row:1;font-size:6px;padding:0;letter-spacing:.4px;gap:10px}.chapter-detail>b{font-size:17px}.chapter-divider strong{grid-row:2;grid-column:1/-1;border:0;border-top:1px solid #10194430;padding:10px 0 0;font-size:12px;letter-spacing:-.2px}.divider-ink strong{border-top-color:#ffda2635}.capability-strip{padding-top:18px;padding-bottom:18px}.capability-strip>b{font-size:9px}.capability-strip>span:first-child{color:#101944}.mission-console{box-shadow:4px 4px 0 #101944}.kit-card{box-shadow:4px 4px 0 #101944}.handoff-checks{box-shadow:5px 5px 0 #ff6445}.token-panel{box-shadow:5px 5px 0 #ffda26}.closing-section{margin-top:40px;box-shadow:5px 5px 0 #101944}.site-footer{padding-left:23px;padding-right:23px}}
 
 /* Concept section text color requested by the project owner. */
-#concept, #concept * { color: #111111; }
 
 .contract-strip{background:#ffda26;color:#101944;border-top:1px solid #101944;border-bottom:1px solid #101944}
 .contract-strip-inner{max-width:1600px;margin:auto;display:grid;grid-template-columns:180px minmax(200px,1fr) 300px 190px;min-height:112px;padding:0 48px}
