@@ -1,7 +1,7 @@
 'use strict';
 
 // Set the official Ethereum token address here after the launch is announced.
-const UNTILO_CONTRACT_ADDRESS = '';
+const OUTLYN_CONTRACT_ADDRESS = '';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -9,7 +9,7 @@ const studio = $('#studio');
 const form = $('#project-form');
 const storageKey = 'untilo-project-brief-v1';
 const palettes = {
-  electric: {accent: '#0046fd', soft: '#edf2ff', ink: '#131d35', label: 'Electric blue'},
+  electric: {accent: '#0636e8', soft: '#fff3ab', ink: '#101944', label: 'Cobalt & yellow'},
   midnight: {accent: '#7851e8', soft: '#f1edff', ink: '#211635', label: 'Midnight purple'},
   forest: {accent: '#267957', soft: '#eef6e9', ink: '#142b22', label: 'Fresh green'}
 };
@@ -149,11 +149,11 @@ $('#project-logo').addEventListener('change', () => {
 });
 $('#project-url').addEventListener('input', () => $('#project-url').setCustomValidity(''));
 $('#use-example').addEventListener('click', () => {
-  $('#project-name').value = 'UNTILO';
+  $('#project-name').value = 'OUTLYN';
   $('#project-description').value = 'A focused launch workspace that brings your project to life with a landing page, launch copy, and release visuals.';
   $('#project-audience').value = 'independent builders and new project teams';
   $('#project-style').value = 'electric';
-  $('#project-url').value = 'https://ghostxrun.github.io/UNTILO/';
+  $('#project-url').value = 'https://untilo.fun/';
   $('#project-url').setCustomValidity('');
   form.requestSubmit();
 });
@@ -165,7 +165,7 @@ function makeLanding(brief, palette) {
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${d}"><title>${n} \u2014 Meet what\u2019s next.</title><style>
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;font-family:Arial,sans-serif;color:${palette.ink}}a{color:inherit;text-decoration:none}header,main,footer{max-width:1100px;margin:auto}header{padding:25px 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8ebf1;font-size:12px}.brand{display:flex;align-items:center;gap:9px;font-size:18px;font-weight:700;letter-spacing:-.6px}.brand img,.mark{width:32px;height:32px;object-fit:cover;border-radius:8px}.mark{display:grid;place-items:center;background:${palette.accent};color:white}header nav{display:flex;gap:22px}.hero{padding:85px 6% 70px;position:relative;overflow:hidden}.eyebrow{font-size:9px;letter-spacing:2px;color:${palette.accent};font-weight:700}h1{font-size:clamp(43px,8vw,94px);line-height:1.02;letter-spacing:-.06em;max-width:850px;margin:28px 0;overflow-wrap:anywhere}h1 span{color:${palette.accent}}.intro{max-width:590px;color:#687182;line-height:1.8;font-size:16px;overflow-wrap:anywhere}.cta{display:inline-block;margin-top:25px;background:${palette.accent};color:white;padding:16px 22px;border-radius:6px;font-size:12px}.audience{padding:40px 6%;background:${palette.soft};border-top:1px solid #e8ebf1}.audience h2{font-size:28px;line-height:1.3;letter-spacing:-1px;max-width:700px;overflow-wrap:anywhere}.audience p{font-size:14px;line-height:1.7;color:#687182;max-width:650px;overflow-wrap:anywhere}.values{display:grid;grid-template-columns:repeat(3,1fr);padding:38px 6%;gap:30px}.values span{font-size:10px;color:${palette.accent}}.values h3{font-size:16px;letter-spacing:-.4px}.values p{font-size:12px;line-height:1.7;color:#687182}footer{padding:25px 6%;border-top:1px solid #e8ebf1;display:flex;gap:20px;justify-content:space-between;font-size:9px;color:#8e98aa}.review{padding:12px 6%;font-size:9px;color:#8e98aa;border-top:1px solid #e8ebf1;margin:0 auto;max-width:1100px}@media(max-width:560px){header{padding:18px 6%}header nav{gap:13px;font-size:10px}.brand{font-size:15px}.hero{padding:50px 6%}.intro{font-size:14px}.values{grid-template-columns:1fr;gap:15px}.audience h2{font-size:24px}footer{flex-wrap:wrap}.eyebrow{font-size:8px}}
-</style></head><body><header><a class="brand" href="#">${mark}${n}</a><nav><a href="#about">About</a><a href="${destination}">${brief.url ? 'Explore' : 'Learn more'} \u2197</a></nav></header><main><section class="hero"><p class="eyebrow">A NEW IDEA. A NEW CHAPTER.</p><h1>Meet <span>${n}.</span><br>Meet what\u2019s next.</h1><p class="intro">${d}</p><a class="cta" href="${destination}">${brief.url ? 'Explore ' + n : 'Discover the idea'} \u2197</a></section><section class="audience" id="about"><p class="eyebrow">BUILT WITH YOU IN MIND</p><h2>A fresh starting point for ${a}.</h2><p>${d}</p></section><section class="values"><article><span>01 / THE IDEA</span><h3>A clear direction.</h3><p>Explore the project, understand the vision, and see where it\u2019s headed.</p></article><article><span>02 / THE PEOPLE</span><h3>Made for your next chapter.</h3><p>A project shaped around the people it hopes to serve.</p></article><article><span>03 / THE START</span><h3>Follow what comes next.</h3><p>This is the beginning. Visit the project for the latest updates.</p></article></section></main><footer><strong>${n}</strong><span>A new chapter starts here.</span><span>Created with UNTILO</span></footer><p class="review">Review your copy and links before publishing.</p></body></html>`;
+</style></head><body><header><a class="brand" href="#">${mark}${n}</a><nav><a href="#about">About</a><a href="${destination}">${brief.url ? 'Explore' : 'Learn more'} \u2197</a></nav></header><main><section class="hero"><p class="eyebrow">A NEW IDEA. A NEW CHAPTER.</p><h1>Meet <span>${n}.</span><br>Meet what\u2019s next.</h1><p class="intro">${d}</p><a class="cta" href="${destination}">${brief.url ? 'Explore ' + n : 'Discover the idea'} \u2197</a></section><section class="audience" id="about"><p class="eyebrow">BUILT WITH YOU IN MIND</p><h2>A fresh starting point for ${a}.</h2><p>${d}</p></section><section class="values"><article><span>01 / THE IDEA</span><h3>A clear direction.</h3><p>Explore the project, understand the vision, and see where it\u2019s headed.</p></article><article><span>02 / THE PEOPLE</span><h3>Made for your next chapter.</h3><p>A project shaped around the people it hopes to serve.</p></article><article><span>03 / THE START</span><h3>Follow what comes next.</h3><p>This is the beginning. Visit the project for the latest updates.</p></article></section></main><footer><strong>${n}</strong><span>A new chapter starts here.</span><span>Created with OUTLYN</span></footer><p class="review">Review your copy and links before publishing.</p></body></html>`;
 }
 function wrapWords(value, maxChars, maxLines) {
   const words = value.trim().split(/\s+/);
@@ -187,7 +187,7 @@ function makeVisual(brief, palette, cover = false) {
   const titleY = cover ? 291 : 535;
   const mark = brief.logo ? `<image href="${escapeHTML(brief.logo)}" x="65" y="56" width="65" height="65" preserveAspectRatio="xMidYMid meet"/>` : `<rect x="65" y="56" width="65" height="65" rx="16" fill="white" fill-opacity=".15"/><text x="98" y="102" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="37" font-weight="700">${escapeHTML(Array.from(brief.name)[0].toUpperCase())}</text>`;
   const tagline = wrapWords(brief.description, cover ? 88 : 58, 2);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${palette.accent}"/><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" opacity=".15"/></pattern></defs><rect width="${w}" height="${h}" fill="url(#grid)"/><circle cx="${w - 120}" cy="${cover ? 190 : 240}" r="${cover ? 170 : 240}" fill="none" stroke="white" stroke-opacity=".15" stroke-width="45"/><path d="M${w - 240} ${cover ? 310 : 360}l200 -200m-160 0h160v160" stroke="white" stroke-opacity=".85" stroke-width="23" fill="none"/>${mark}<text x="65" y="${cover ? 192 : 425}" fill="white" opacity=".7" font-family="Arial,sans-serif" font-size="15" letter-spacing="4">YOUR NEXT CHAPTER STARTS HERE.</text><text fill="white" font-family="Arial,sans-serif" font-size="${titleSize}" font-weight="700" letter-spacing="-4">${lines.map((line, index) => `<tspan x="60" y="${titleY + index * titleSize * 1.08}">${escapeHTML(line)}</tspan>`).join('')}</text><text fill="white" opacity=".8" font-family="Arial,sans-serif" font-size="${cover ? 19 : 23}">${tagline.map((line, index) => `<tspan x="65" y="${titleY + lines.length * titleSize * 1.08 + 20 + index * 34}">${escapeHTML(line)}</tspan>`).join('')}</text><path d="M65 ${h - 100}H${w - 65}" stroke="white" stroke-opacity=".3"/><text x="65" y="${h - 58}" fill="white" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">MEET WHAT\u2019S NEXT.</text><text x="${w - 65}" y="${h - 58}" text-anchor="end" fill="white" opacity=".65" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">CREATED WITH UNTILO \u2197</text></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="${palette.accent}"/><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1" fill="white" opacity=".15"/></pattern></defs><rect width="${w}" height="${h}" fill="url(#grid)"/><circle cx="${w - 120}" cy="${cover ? 190 : 240}" r="${cover ? 170 : 240}" fill="none" stroke="white" stroke-opacity=".15" stroke-width="45"/><path d="M${w - 240} ${cover ? 310 : 360}l200 -200m-160 0h160v160" stroke="white" stroke-opacity=".85" stroke-width="23" fill="none"/>${mark}<text x="65" y="${cover ? 192 : 425}" fill="white" opacity=".7" font-family="Arial,sans-serif" font-size="15" letter-spacing="4">YOUR NEXT CHAPTER STARTS HERE.</text><text fill="white" font-family="Arial,sans-serif" font-size="${titleSize}" font-weight="700" letter-spacing="-4">${lines.map((line, index) => `<tspan x="60" y="${titleY + index * titleSize * 1.08}">${escapeHTML(line)}</tspan>`).join('')}</text><text fill="white" opacity=".8" font-family="Arial,sans-serif" font-size="${cover ? 19 : 23}">${tagline.map((line, index) => `<tspan x="65" y="${titleY + lines.length * titleSize * 1.08 + 20 + index * 34}">${escapeHTML(line)}</tspan>`).join('')}</text><path d="M65 ${h - 100}H${w - 65}" stroke="white" stroke-opacity=".3"/><text x="65" y="${h - 58}" fill="white" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">MEET WHAT\u2019S NEXT.</text><text x="${w - 65}" y="${h - 58}" text-anchor="end" fill="white" opacity=".65" font-family="Arial,sans-serif" font-size="12" letter-spacing="2">CREATED WITH OUTLYN \u2197</text></svg>`;
 }
 function makeKit(brief) {
   const palette = palettes[brief.style] || palettes.electric;
@@ -333,12 +333,12 @@ $('#download-kit').addEventListener('click', async () => {
   const images = await rasterAssets(kit);
   const files = [
     {name: 'index.html', content: kit.html},
-    {name: 'launch-copy.txt', content: `UNTILO LAUNCH KIT \u2014 RELEASE COPY\n\nPROJECT: ${kit.brief.name}\n\nLAUNCH POST\n${kit.post}\n\nINTRODUCTION THREAD\n${kit.thread}\n\nReview all copy and links before publishing. Edit or split longer posts for your X account limits.`},
+    {name: 'launch-copy.txt', content: `OUTLYN LAUNCH KIT \u2014 RELEASE COPY\n\nPROJECT: ${kit.brief.name}\n\nLAUNCH POST\n${kit.post}\n\nINTRODUCTION THREAD\n${kit.thread}\n\nReview all copy and links before publishing. Edit or split longer posts for your X account limits.`},
     {name: 'launch-poster.svg', content: kit.poster},
     {name: 'social-cover.svg', content: kit.cover},
     {name: 'launch-poster.png', data: new Uint8Array(await images.poster.arrayBuffer())},
     {name: 'social-cover.png', data: new Uint8Array(await images.cover.arrayBuffer())},
-    {name: 'READ-ME.txt', content: 'Created with UNTILO Launch Studio.\n\n1. Open index.html in your browser to review your landing page.\n2. Upload index.html to a static hosting provider to publish it. Review wording and links first.\n3. Use launch-poster.png (1080 x 1080) and social-cover.png (1200 x 630) on your release channels. Editable SVG source files are also included.\n4. Your latest edited post and thread are in launch-copy.txt. Review post lengths and claims before publishing.\n\nYour files were prepared from browser-local layouts and copy structures. Live AI execution is not connected. No deployment or social posting has been performed.\n'}
+    {name: 'READ-ME.txt', content: 'Created with OUTLYN Launch Studio.\n\n1. Open index.html in your browser to review your landing page.\n2. Upload index.html to a static hosting provider to publish it. Review wording and links first.\n3. Use launch-poster.png (1080 x 1080) and social-cover.png (1200 x 630) on your release channels. Editable SVG source files are also included.\n4. Your latest edited post and thread are in launch-copy.txt. Review post lengths and claims before publishing.\n\nYour files were prepared from browser-local layouts and copy structures. Live AI execution is not connected. No deployment or social posting has been performed.\n'}
   ];
   const slug = kit.brief.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'project';
   saveDownload(makeZip(files), slug + '-launch-kit.zip');
@@ -352,13 +352,13 @@ $('#download-kit').addEventListener('click', async () => {
 });
 window.addEventListener('pagehide', () => {objectUrls.forEach(url => URL.revokeObjectURL(url)); objectUrls.clear();});
 
-const hasOfficialContract = /^0x[0-9a-fA-F]{40}$/.test(UNTILO_CONTRACT_ADDRESS);
+const hasOfficialContract = /^0x[0-9a-fA-F]{40}$/.test(OUTLYN_CONTRACT_ADDRESS);
 const contractCopyButton = $('#copy-contract');
 if (hasOfficialContract && contractCopyButton) {
-  $('#official-ca').textContent = UNTILO_CONTRACT_ADDRESS;
+  $('#official-ca').textContent = OUTLYN_CONTRACT_ADDRESS;
   $('#contract-status').textContent = 'Verify this full address before interacting.';
   $('#contract-network-status').textContent = 'ANNOUNCED';
-  $('.ca-row strong').textContent = UNTILO_CONTRACT_ADDRESS;
+  $('.ca-row strong').textContent = OUTLYN_CONTRACT_ADDRESS;
   $('.ca-row strong').style.overflowWrap = 'anywhere';
   $('.ca-row strong').style.fontSize = '15px';
   $('.ca-row > span').textContent = 'ETHEREUM (ETH)';
@@ -368,7 +368,7 @@ if (hasOfficialContract && contractCopyButton) {
   const icon = document.createElement('span'); icon.textContent = '\u2197'; icon.setAttribute('aria-hidden', 'true'); contractCopyButton.append(icon);
   contractCopyButton.addEventListener('click', async () => {
     try {
-      await navigator.clipboard.writeText(UNTILO_CONTRACT_ADDRESS);
+      await navigator.clipboard.writeText(OUTLYN_CONTRACT_ADDRESS);
       toast('Official contract address copied.');
     } catch {
       const selection = window.getSelection();
@@ -388,7 +388,7 @@ const roleDescriptions = {
   owner: {name: 'PROJECT OWNER', description: 'Reviews the message, identity, links, and files. Final approval and the decision to publish stay with you.'}
 };
 const workflowStages = [
-  {label: 'BRIEF', title: 'Give the work a destination.', description: 'Tell UNTILO what you are building, who it serves, and what the first release needs to communicate.', output: 'A shared project brief', role: 'coordinator', nodes: ['coordinator']},
+  {label: 'BRIEF', title: 'Give the work a destination.', description: 'Tell OUTLYN what you are building, who it serves, and what the first release needs to communicate.', output: 'A shared project brief', role: 'coordinator', nodes: ['coordinator']},
   {label: 'PLAN', title: 'Define what must be delivered.', description: 'Translate the brief into a concrete scope: a landing page, launch copy, poster, and social cover. Keep the audience and visual direction consistent.', output: 'A focused delivery plan', role: 'strategy', nodes: ['coordinator', 'strategy']},
   {label: 'ASSEMBLE', title: 'Give every role a clear handoff.', description: 'Strategy sets the direction. Copy shapes the story. Design defines the look. Build brings the pieces together. Each role works from the same brief.', output: 'One coordinated workflow', role: 'coordinator', nodes: ['strategy', 'copy', 'design', 'build']},
   {label: 'CREATE', title: 'Turn the direction into assets.', description: 'Use your project details and selected palette to prepare page content, social copy, a launch poster, and a cover. Review the results together in the studio.', output: 'Page + copy + coordinated visuals', role: 'build', nodes: ['copy', 'design', 'build']},
