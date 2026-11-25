@@ -153,7 +153,7 @@ $('#use-example').addEventListener('click', () => {
   $('#project-description').value = 'A focused launch workspace that brings your project to life with a landing page, launch copy, and release visuals.';
   $('#project-audience').value = 'independent builders and new project teams';
   $('#project-style').value = 'electric';
-  $('#project-url').value = 'https://untilo.fun/';
+  $('#project-url').value = 'https://outlyn.fun/';
   $('#project-url').setCustomValidity('');
   form.requestSubmit();
 });
