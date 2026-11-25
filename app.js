@@ -1,7 +1,7 @@
 'use strict';
 
 // Set the official Solana token address here after the launch is announced.
-const OUTLYN_CONTRACT_ADDRESS = '4Rz8RoEzMmHAs3L9LL1vm5wauBzieDhueaFk2HoPpump';
+const OUTLYN_CONTRACT_ADDRESS = '';
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
